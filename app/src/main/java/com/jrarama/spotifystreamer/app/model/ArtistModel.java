@@ -1,28 +1,26 @@
 package com.jrarama.spotifystreamer.app.model;
 
-import android.net.Uri;
-
 /**
  * Created by Joshua on 13/6/2015.
  */
 public class ArtistModel {
 
-    private Uri imageUrl;
+    private String imageUrl;
 
     private String name;
 
     public ArtistModel() {}
 
-    public ArtistModel(String name, Uri imageUrl) {
+    public ArtistModel(String name, String imageUrl) {
         setName(name);
         setImageUrl(imageUrl);
     }
 
-    public Uri getImageUrl() {
+    public String getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(Uri imageUrl) {
+    public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 

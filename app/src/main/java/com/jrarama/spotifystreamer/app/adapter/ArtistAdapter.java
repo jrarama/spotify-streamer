@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.jrarama.spotifystreamer.app.R;
-import com.jrarama.spotifystreamer.app.model.Artist;
+import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -18,11 +18,11 @@ import java.util.List;
 /**
  * Created by Joshua on 14/6/2015.
  */
-public class ArtistAdapter extends ArrayAdapter<Artist> {
+public class ArtistAdapter extends ArrayAdapter<ArtistModel> {
 
     private Context context;
     private int layoutResource;
-    private List<Artist> artists;
+    private List<ArtistModel> artistModels;
 
     static class ViewHolder {
         ImageView artistImage;
@@ -30,12 +30,12 @@ public class ArtistAdapter extends ArrayAdapter<Artist> {
 
     }
 
-    public ArtistAdapter(Context context, int layoutResource, List<Artist> artists) {
-        super(context, layoutResource, artists);
+    public ArtistAdapter(Context context, int layoutResource, List<ArtistModel> artistModels) {
+        super(context, layoutResource, artistModels);
 
         this.context = context;
         this.layoutResource = layoutResource;
-        this.artists = artists;
+        this.artistModels = artistModels;
     }
 
     @Override
@@ -56,12 +56,13 @@ public class ArtistAdapter extends ArrayAdapter<Artist> {
             holder = (ViewHolder) row.getTag();
         }
 
-        Artist artist = artists.get(position);
+        ArtistModel artistModel = artistModels.get(position);
 
-        holder.artistName.setText(artist.getName());
-        holder.artistImage.setImageURI(artist.getImageUrl());
+        holder.artistName.setText(artistModel.getName());
 
-        Picasso.with(context).load(artist.getImageUrl()).fit().into(holder.artistImage);
+        if (artistModel.getImageUrl() != null) {
+            Picasso.with(context).load(artistModel.getImageUrl()).fit().into(holder.artistImage);
+        }
         return row;
     }
 }

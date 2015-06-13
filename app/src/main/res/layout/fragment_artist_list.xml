@@ -1,12 +1,22 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.jrarama.spotifystreamer.app.ArtistListFragment">
 
-    <ListView
-        android:id="@+id/artist_list"
+    <EditText
+        android:hint="@string/artist_search_hint"
+        android:id="@+id/artist_search_text"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></ListView>
+        android:layout_height="wrap_content"
+        />
 
-</FrameLayout>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/artist_search_text"
+        android:id="@+id/artist_list">
+
+    </ListView>
+
+</RelativeLayout>
