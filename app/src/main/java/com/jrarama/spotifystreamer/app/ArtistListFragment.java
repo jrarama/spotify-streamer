@@ -17,6 +17,8 @@ import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.jrarama.spotifystreamer.app.task.ArtistFetcherTask;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ArtistListFragment extends Fragment {
 
@@ -45,8 +47,10 @@ public class ArtistListFragment extends Fragment {
     }
 
     private void attachArtistSearchEvent(EditText editText) {
-
         editText.addTextChangedListener(new TextWatcher() {
+            private Timer timer=new Timer();
+            private final long TEXT_CHANGE_DELAY = 500; // in ms
+
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -56,8 +60,15 @@ public class ArtistListFragment extends Fragment {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                new ArtistFetcher().execute(s.toString());
+            public void afterTextChanged(final Editable s) {
+                timer.cancel();
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        new ArtistFetcher().execute(s.toString());
+                    }
+                }, TEXT_CHANGE_DELAY);
             }
         });
     }

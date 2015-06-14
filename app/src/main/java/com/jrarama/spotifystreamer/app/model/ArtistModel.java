@@ -5,15 +5,24 @@ package com.jrarama.spotifystreamer.app.model;
  */
 public class ArtistModel {
 
+    private String id;
+
     private String imageUrl;
 
     private String name;
 
-    public ArtistModel() {}
-
-    public ArtistModel(String name, String imageUrl) {
-        setName(name);
+    public ArtistModel(String id, String name, String imageUrl) {
+        setId(id);
         setImageUrl(imageUrl);
+        setName(name);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getImageUrl() {

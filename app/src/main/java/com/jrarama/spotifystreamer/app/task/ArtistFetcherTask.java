@@ -34,13 +34,17 @@ public class ArtistFetcherTask extends AsyncTask<String, Void, ArrayList<ArtistM
         try {
             artistsPager = spotifyService.searchArtists(params[0]);
 
+            Log.d(LOG_TAG, "Searching Artist: " + params[0]);
             if (artistsPager != null && artistsPager.artists != null && artistsPager.artists.items != null) {
 
                 ArrayList<ArtistModel> artistModels = new ArrayList<>();
+                Log.d(LOG_TAG, "Listing artists");
                 for (Artist artist: artistsPager.artists.items) {
                     List<Image> images = artist.images;
-                    ArtistModel model = new ArtistModel(artist.name,
-                            !images.isEmpty() ? images.get(0).url : null);
+                    String imageUrl = !images.isEmpty() ? images.get(0).url : null;
+                    ArtistModel model = new ArtistModel(artist.id, artist.name, imageUrl);
+
+                    Log.d(LOG_TAG, "Artist id: " + artist.id + ", Artist name: " + artist.name + ", Image Url: " + imageUrl);
                     artistModels.add(model);
                 }
 
@@ -48,7 +52,11 @@ public class ArtistFetcherTask extends AsyncTask<String, Void, ArrayList<ArtistM
             }
 
         } catch (RetrofitError error) {
-            Log.e(LOG_TAG, "Error searching artists", error);
+            if (error.getMessage().contains("400 Bad Request")) {
+                Log.d(LOG_TAG, "No Artists found");
+            } else {
+                Log.e(LOG_TAG, "Error searching artists", error);
+            }
             return null;
         }
         return null;
