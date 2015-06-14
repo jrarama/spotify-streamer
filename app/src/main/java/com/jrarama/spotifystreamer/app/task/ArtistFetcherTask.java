@@ -57,7 +57,6 @@ public class ArtistFetcherTask extends AsyncTask<String, Void, ArrayList<ArtistM
             } else {
                 Log.e(LOG_TAG, "Error searching artists", error);
             }
-            return null;
         }
         return null;
     }

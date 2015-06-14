@@ -5,4 +5,5 @@
     
     <dimen name="artist_image_size">64dp</dimen>
     <dimen name="list_item_padding">10dp</dimen>
+    <dimen name="texts_margin_bottom">5dp</dimen>
 </resources>

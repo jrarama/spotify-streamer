@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.jrarama.spotifystreamer.app.ArtistListFragment">
+    tools:context="com.jrarama.spotifystreamer.app.fragment.ArtistListFragment">
 
     <EditText
         android:hint="@string/artist_search_hint"

@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:minHeight="?android:attr/listPreferredItemHeight"
-    android:padding="@dimen/list_item_padding"
+    style="@style/ListItemDefault"
     >
 
     <ImageView
         android:id="@+id/artist_image"
-        android:layout_width="@dimen/artist_image_size"
-        android:layout_height="@dimen/artist_image_size" />
+        style="@style/ListImageDefault" />
 
     <TextView
         android:id="@+id/artist_name"
