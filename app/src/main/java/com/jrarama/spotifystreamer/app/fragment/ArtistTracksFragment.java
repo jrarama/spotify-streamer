@@ -20,30 +20,46 @@ public class ArtistTracksFragment extends Fragment {
 
     private static final String LOG_TAG = ArtistTracksFragment.class.getSimpleName();
     private ArtistTrackAdapter artistTrackAdapter;
+    private ArrayList<TrackModel> mTracks;
     private String mArtistId;
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("tracks", mTracks);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mTracks = savedInstanceState.getParcelableArrayList("tracks");
+        } else {
+            Intent intent = getActivity().getIntent();
+            if (intent != null) {
+                mArtistId = intent.getStringExtra(Intent.EXTRA_TEXT);
+                fetchTracks();
+            }
+        }
+
+        artistTrackAdapter = new ArtistTrackAdapter(
+                getActivity(),
+                R.layout.list_item_artist_track,
+                mTracks != null ? mTracks : new ArrayList<TrackModel>()
+        );
+
+        artistTrackAdapter.setNotifyOnChange(false);
+
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_artist_tracks, container, false);
 
-        artistTrackAdapter = new ArtistTrackAdapter(
-                getActivity(),
-                R.layout.list_item_artist_track,
-                new ArrayList<TrackModel>()
-        );
-
         ListView listView = (ListView) rootView.findViewById(R.id.artist_tracks_list);
-
-        artistTrackAdapter.setNotifyOnChange(false);
         listView.setAdapter(artistTrackAdapter);
-
-
-        Intent intent = getActivity().getIntent();
-        if (intent != null) {
-            mArtistId = intent.getStringExtra(Intent.EXTRA_TEXT);
-            fetchTracks();
-        }
 
         return rootView;
     }
@@ -52,11 +68,11 @@ public class ArtistTracksFragment extends Fragment {
         new ArtistTrackFetcher().execute(mArtistId, getString(R.string.default_country_code));
     }
 
-    private void populateTracks(ArrayList<TrackModel> trackModels) {
+    private void populateTracks() {
         artistTrackAdapter.clear();
 
-        if (trackModels != null) {
-            for (TrackModel model: trackModels) {
+        if (mTracks != null) {
+            for (TrackModel model: mTracks) {
                 artistTrackAdapter.add(model);
             }
         }
@@ -69,8 +85,8 @@ public class ArtistTracksFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<TrackModel> trackModels) {
             super.onPostExecute(trackModels);
-
-            populateTracks(trackModels);
+            mTracks = trackModels;
+            populateTracks();
         }
     }
 }

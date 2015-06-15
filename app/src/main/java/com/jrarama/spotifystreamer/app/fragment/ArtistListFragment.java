@@ -29,24 +29,55 @@ public class ArtistListFragment extends Fragment {
 
     private static final String LOG_TAG = ArtistListFragment.class.getSimpleName();
     private ArtistAdapter artistsAdapter;
+    private static final String ARTISTS_KEY = "artists";
+    private ArrayList<ArtistModel> mArtistModels = null;
+    private String mSearchArtist = null;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_artist_list, container, false);
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "executing onSaveInstanceState");
+
+        outState.putParcelableArrayList(ARTISTS_KEY, mArtistModels);
+        outState.putString("q", mSearchArtist);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        Log.d(LOG_TAG, "executing onCreate");
+
+        if (savedInstanceState != null) {
+            mArtistModels = savedInstanceState.getParcelableArrayList(ARTISTS_KEY);
+            mSearchArtist = savedInstanceState.getString("q");
+
+            Log.d(LOG_TAG, "mSearchArtist: " + mSearchArtist);
+        }
 
         artistsAdapter = new ArtistAdapter(
                 getActivity(),
                 R.layout.list_item_artist,
-                new ArrayList<ArtistModel>()
+                mArtistModels != null ? mArtistModels : new ArrayList<ArtistModel>()
         );
 
+        artistsAdapter.setNotifyOnChange(false);
+        artistsAdapter.notifyDataSetChanged();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "executing onCreateView");
+
+        View rootView = inflater.inflate(R.layout.fragment_artist_list, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.artist_list);
         EditText editText = (EditText) rootView.findViewById(R.id.artist_search_text);
 
-        artistsAdapter.setNotifyOnChange(false);
-        listView.setAdapter(artistsAdapter);
+        editText.setText(mSearchArtist);
 
+        listView.setAdapter(artistsAdapter);
         attachArtistSearchEvent(editText);
         attachOnItemClickEvent(listView);
         return rootView;
@@ -87,23 +118,24 @@ public class ArtistListFragment extends Fragment {
 
             @Override
             public void afterTextChanged(final Editable s) {
+                mSearchArtist = s.toString();
                 timer.cancel();
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        new ArtistFetcher().execute(s.toString());
+                        new ArtistFetcher().execute(mSearchArtist);
                     }
                 }, TEXT_CHANGE_DELAY);
             }
         });
     }
 
-    private void populateArtists(ArrayList<ArtistModel> artistModels) {
+    private void populateArtists() {
         artistsAdapter.clear();
 
-        if (artistModels != null) {
-            for (ArtistModel model: artistModels) {
+        if (mArtistModels != null) {
+            for (ArtistModel model: mArtistModels) {
                 artistsAdapter.add(model);
             }
         }
@@ -121,7 +153,8 @@ public class ArtistListFragment extends Fragment {
                 Toast.makeText(getActivity(), getString(R.string.message_no_artist), Toast.LENGTH_SHORT).show();
             }
 
-            populateArtists(artistModels);
+            mArtistModels = artistModels;
+            populateArtists();
         }
     }
 }
