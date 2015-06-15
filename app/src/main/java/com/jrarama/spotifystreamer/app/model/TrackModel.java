@@ -1,9 +1,12 @@
 package com.jrarama.spotifystreamer.app.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Joshua on 14/6/2015.
  */
-public class TrackModel {
+public class TrackModel implements Parcelable {
 
     private String id;
     private String title;
@@ -48,4 +51,36 @@ public class TrackModel {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.title);
+        dest.writeString(this.albumName);
+        dest.writeString(this.imageUrl);
+    }
+
+    public TrackModel(Parcel parcel) {
+        this.id = parcel.readString();
+        this.title = parcel.readString();
+        this.albumName = parcel.readString();
+        this.imageUrl = parcel.readString();
+    }
+
+    private static Parcelable.Creator CREATOR = new Creator<TrackModel>() {
+        @Override
+        public TrackModel createFromParcel(Parcel source) {
+            return new TrackModel(source);
+        }
+
+        @Override
+        public TrackModel[] newArray(int size) {
+            return new TrackModel[size];
+        }
+    };
 }
