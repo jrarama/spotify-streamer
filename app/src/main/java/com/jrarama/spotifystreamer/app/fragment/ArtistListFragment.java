@@ -103,7 +103,7 @@ public class ArtistListFragment extends Fragment {
     private void attachArtistSearchEvent(EditText editText) {
         editText.addTextChangedListener(new TextWatcher() {
             private Timer timer=new Timer();
-            private final long TEXT_CHANGE_DELAY = 300; // in ms
+            private final long TEXT_CHANGE_DELAY = 500; // in ms
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
