@@ -72,7 +72,7 @@ public class TrackModel implements Parcelable {
         this.imageUrl = parcel.readString();
     }
 
-    private static Parcelable.Creator CREATOR = new Creator<TrackModel>() {
+    public static Parcelable.Creator CREATOR = new Creator<TrackModel>() {
         @Override
         public TrackModel createFromParcel(Parcel source) {
             return new TrackModel(source);

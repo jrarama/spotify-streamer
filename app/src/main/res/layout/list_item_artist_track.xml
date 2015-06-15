@@ -20,6 +20,12 @@
         >
 
         <TextView
+            android:id="@+id/artist_track_name"
+            android:text="Track Name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
             android:id="@+id/artist_track_album"
             android:text="Album Name"
             android:layout_width="fill_parent"
@@ -27,11 +33,6 @@
             android:layout_marginBottom="@dimen/texts_margin_bottom"
             />
 
-        <TextView
-            android:id="@+id/artist_track_name"
-            android:text="Track Name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

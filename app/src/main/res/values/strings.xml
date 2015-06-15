@@ -4,9 +4,11 @@
 
     <string name="artist_search_hint">Enter Artist name</string>
     <string name="message_no_artist">No artists found! Please refine your search.</string>
-    <string name="title_activity_artist_tracks">ArtistTracksActivity</string>
+    <string name="title_activity_artist_tracks">Top 10 Tracks</string>
 
     <string name="hello_world">Hello world!</string>
 
     <string name="default_country_code">SG</string>
+    <string name="error_invalid_artist_id">Invalid artist id.</string>
+    <string name="error_no_artist_selected">No artist selected</string>
 </resources>

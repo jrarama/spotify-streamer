@@ -62,7 +62,7 @@ public class ArtistModel implements Parcelable {
         dest.writeString(imageUrl);
     }
 
-    private static final Parcelable.Creator<ArtistModel> CREATOR = new Creator<ArtistModel>() {
+    public static final Parcelable.Creator<ArtistModel> CREATOR = new Creator<ArtistModel>() {
         @Override
         public ArtistModel createFromParcel(Parcel source) {
             return new ArtistModel(source);

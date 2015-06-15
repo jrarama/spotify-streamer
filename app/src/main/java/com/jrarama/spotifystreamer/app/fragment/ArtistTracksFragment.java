@@ -1,13 +1,14 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
 import com.jrarama.spotifystreamer.app.adapter.ArtistTrackAdapter;
@@ -17,30 +18,31 @@ import com.jrarama.spotifystreamer.app.task.ArtistTracksFetcherTask;
 import java.util.ArrayList;
 
 public class ArtistTracksFragment extends Fragment {
-
     private static final String LOG_TAG = ArtistTracksFragment.class.getSimpleName();
     private ArtistTrackAdapter artistTrackAdapter;
     private ArrayList<TrackModel> mTracks;
+    private static final String TRACKS_KEY = "tracks";
     private String mArtistId;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList("tracks", mTracks);
+        outState.putParcelableArrayList(TRACKS_KEY, mTracks);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Intent intent = getActivity().getIntent();
+        if (intent != null) {
+            mArtistId = intent.getStringExtra(Intent.EXTRA_UID);
+        }
+
         if (savedInstanceState != null) {
-            mTracks = savedInstanceState.getParcelableArrayList("tracks");
+            mTracks = savedInstanceState.getParcelableArrayList(TRACKS_KEY);
         } else {
-            Intent intent = getActivity().getIntent();
-            if (intent != null) {
-                mArtistId = intent.getStringExtra(Intent.EXTRA_TEXT);
-                fetchTracks();
-            }
+            fetchTracks();
         }
 
         artistTrackAdapter = new ArtistTrackAdapter(
@@ -50,7 +52,6 @@ public class ArtistTracksFragment extends Fragment {
         );
 
         artistTrackAdapter.setNotifyOnChange(false);
-
     }
 
     @Nullable
@@ -60,12 +61,15 @@ public class ArtistTracksFragment extends Fragment {
 
         ListView listView = (ListView) rootView.findViewById(R.id.artist_tracks_list);
         listView.setAdapter(artistTrackAdapter);
-
         return rootView;
     }
 
     private void fetchTracks() {
-        new ArtistTrackFetcher().execute(mArtistId, getString(R.string.default_country_code));
+        if (mArtistId != null) {
+            new ArtistTrackFetcher().execute(mArtistId, getString(R.string.default_country_code));
+        } else {
+            Toast.makeText(getActivity(), getString(R.string.error_invalid_artist_id), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void populateTracks() {
