@@ -3,6 +3,7 @@ package com.jrarama.spotifystreamer.app.task;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.model.ArtistModel;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class ArtistFetcherTask extends AsyncTask<String, Void, ArrayList<ArtistM
                 Log.d(LOG_TAG, "Listing artists");
                 for (Artist artist: artistsPager.artists.items) {
                     List<Image> images = artist.images;
-                    String imageUrl = !images.isEmpty() ? images.get(0).url : null;
+                    String imageUrl = Utility.getImageUrlBySize(images, 64);
                     ArtistModel model = new ArtistModel(artist.id, artist.name, imageUrl);
 
                     Log.d(LOG_TAG, "Artist id: " + artist.id + ", Artist name: " + artist.name + ", Image Url: " + imageUrl);

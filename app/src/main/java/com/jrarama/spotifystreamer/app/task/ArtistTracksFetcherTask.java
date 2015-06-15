@@ -3,6 +3,7 @@ package com.jrarama.spotifystreamer.app.task;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 
 import java.util.ArrayList;
@@ -50,9 +51,7 @@ public class ArtistTracksFetcherTask extends AsyncTask<String, Void, ArrayList<T
 
                     if (track.album != null) {
                         albumName = track.album.name;
-                        if (track.album.images != null && !track.album.images.isEmpty()) {
-                            imageUrl = track.album.images.get(0).url;
-                        }
+                        imageUrl = Utility.getImageUrlBySize(track.album.images, 64);
                     }
 
                     Log.d(LOG_TAG, "Track id: " + track.id + ", Track name: " + track.name +
