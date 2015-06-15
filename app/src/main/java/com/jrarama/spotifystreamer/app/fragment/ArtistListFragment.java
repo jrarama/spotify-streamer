@@ -117,6 +117,13 @@ public class ArtistListFragment extends Fragment {
             public void afterTextChanged(final Editable s) {
                 mSearchArtist = s.toString();
                 timer.cancel();
+
+                if (mSearchArtist.length() == 0) {
+                    mArtistModels = null;
+                    populateArtists();
+                    return;
+                }
+
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
