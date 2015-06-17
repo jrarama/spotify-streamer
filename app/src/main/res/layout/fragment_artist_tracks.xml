@@ -3,6 +3,15 @@
     android:layout_height="match_parent"
     tools:context="com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment">
 
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/no_tracks_textview"
+        android:textSize="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:text="@string/error_no_tracks"/>
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

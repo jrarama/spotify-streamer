@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
@@ -23,6 +24,8 @@ public class ArtistTracksFragment extends Fragment {
     private ArrayList<TrackModel> mTracks;
     private static final String TRACKS_KEY = "tracks";
     private String mArtistId;
+    private ListView tracksList;
+    private TextView tracksText;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -59,8 +62,14 @@ public class ArtistTracksFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_artist_tracks, container, false);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.artist_tracks_list);
-        listView.setAdapter(artistTrackAdapter);
+        tracksList = (ListView) rootView.findViewById(R.id.artist_tracks_list);
+        tracksText = (TextView) rootView.findViewById(R.id.no_tracks_textview);
+
+        if (savedInstanceState != null) {
+            setViewVisibility();
+        }
+
+        tracksList.setAdapter(artistTrackAdapter);
         return rootView;
     }
 
@@ -84,12 +93,20 @@ public class ArtistTracksFragment extends Fragment {
         artistTrackAdapter.notifyDataSetChanged();
     }
 
+    private void setViewVisibility() {
+        boolean noTracks = mTracks == null || mTracks.isEmpty();
+        tracksList.setVisibility(noTracks ? View.GONE : View.VISIBLE);
+        tracksText.setVisibility(!noTracks ? View.GONE : View.VISIBLE);
+    }
+
     class ArtistTrackFetcher extends ArtistTracksFetcherTask {
 
         @Override
         protected void onPostExecute(ArrayList<TrackModel> trackModels) {
             super.onPostExecute(trackModels);
+
             mTracks = trackModels;
+            setViewVisibility();
             populateTracks();
         }
     }

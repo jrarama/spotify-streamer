@@ -11,4 +11,5 @@
     <string name="default_country_code">SG</string>
     <string name="error_invalid_artist_id">Invalid artist id.</string>
     <string name="error_no_artist_selected">No artist selected</string>
+    <string name="error_no_tracks">No tracks for the selected artists.</string>
 </resources>
