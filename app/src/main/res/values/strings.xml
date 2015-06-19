@@ -6,10 +6,11 @@
     <string name="message_no_artist">No artists found! Please refine your search.</string>
     <string name="title_activity_artist_tracks">Top 10 Tracks</string>
 
-    <string name="hello_world">Hello world!</string>
-
     <string name="default_country_code">SG</string>
     <string name="error_invalid_artist_id">Invalid artist id.</string>
     <string name="error_no_artist_selected">No artist selected</string>
     <string name="error_no_tracks">No tracks for the selected artists.</string>
+    <string name="track_name_placeholder">Track Name</string>
+    <string name="album_name_placeholder">Album Name</string>
+    <string name="artist_name_placeholder">Artist Name</string>
 </resources>

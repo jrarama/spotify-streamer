@@ -9,9 +9,8 @@
         style="@style/ListImageDefault"
         />
 
-
     <LinearLayout
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/image_margin_right"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/artist_track_image"
         android:layout_width="fill_parent"
@@ -21,16 +20,16 @@
 
         <TextView
             android:id="@+id/artist_track_name"
-            android:text="Track Name"
+            android:text="@string/track_name_placeholder"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+            style="@style/DefaultTextView"
+            android:layout_marginBottom="@dimen/texts_margin_bottom" />
 
         <TextView
             android:id="@+id/artist_track_album"
-            android:text="Album Name"
+            android:text="@string/album_name_placeholder"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/texts_margin_bottom"
+            style="@style/DefaultTextView"
             />
 
 

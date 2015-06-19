@@ -1,15 +1,16 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    style="@style/PaddedDefault"
     tools:context="com.jrarama.spotifystreamer.app.fragment.ArtistListFragment">
 
     <EditText
+        android:maxLines="1"
+        android:singleLine="true"
         android:hint="@string/artist_search_hint"
         android:id="@+id/artist_search_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        style="@style/DefaultTextView"
         />
 
     <ListView
