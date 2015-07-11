@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="16dp"
+    >
+
+    <TextView
+        android:id="@+id/player_artist_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Coldplay"
+        />
+
+    <TextView
+        android:id="@+id/player_album_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ghost Stories"
+        />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+
+        <ImageView
+            android:id="@+id/player_image"
+            android:layout_gravity="center"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:background="@android:color/darker_gray"
+            />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/player_track_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ghost Stories"
+        />
+
+    <SeekBar
+        android:id="@+id/player_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/player_seek_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="0:00"
+            />
+
+        <TextView
+            android:id="@+id/player_duration_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="0:00"
+            />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/player_prev_btn"
+            style="@style/PlayerButton"
+            android:background="@android:drawable/ic_media_previous"
+            />
+
+        <Button
+            android:id="@+id/player_play_btn"
+            style="@style/PlayerButton"
+            android:background="@android:drawable/ic_media_play"
+            />
+
+        <Button
+            android:id="@+id/player_next_btn"
+            style="@style/PlayerButton"
+            android:background="@android:drawable/ic_media_next"
+            />
+    </LinearLayout>
+
+</LinearLayout>

@@ -55,9 +55,11 @@ public class ArtistTracksFetcherTask extends AsyncTask<String, Void, ArrayList<T
                     }
 
                     Log.d(LOG_TAG, "Track id: " + track.id + ", Track name: " + track.name +
-                            ", Album name: " + albumName + ", Image Url: " + imageUrl);
+                            ", Album name: " + albumName + ", Image Url: " + imageUrl +
+                            ", Preview Url: " + track.preview_url);
 
-                    TrackModel model = new TrackModel(track.id, track.name, albumName, imageUrl);
+
+                    TrackModel model = new TrackModel(track.id, track.name, albumName, imageUrl, track.preview_url);
                     trackModels.add(model);
                 }
 

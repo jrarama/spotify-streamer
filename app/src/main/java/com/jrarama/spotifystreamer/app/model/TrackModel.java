@@ -12,12 +12,14 @@ public class TrackModel implements Parcelable {
     private String title;
     private String albumName;
     private String imageUrl;
+    private String trackUrl;
 
-    public TrackModel(String id, String title, String albumName, String imageUrl) {
+    public TrackModel(String id, String title, String albumName, String imageUrl, String trackUrl) {
         setId(id);
         setTitle(title);
         setAlbumName(albumName);
         setImageUrl(imageUrl);
+        setTrackUrl(trackUrl);
     }
 
     public String getId() {
@@ -52,6 +54,14 @@ public class TrackModel implements Parcelable {
         this.imageUrl = imageUrl;
     }
 
+    public String getTrackUrl() {
+        return trackUrl;
+    }
+
+    public void setTrackUrl(String trackUrl) {
+        this.trackUrl = trackUrl;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -63,6 +73,7 @@ public class TrackModel implements Parcelable {
         dest.writeString(this.title);
         dest.writeString(this.albumName);
         dest.writeString(this.imageUrl);
+        dest.writeString(this.trackUrl);
     }
 
     public TrackModel(Parcel parcel) {
@@ -70,6 +81,7 @@ public class TrackModel implements Parcelable {
         this.title = parcel.readString();
         this.albumName = parcel.readString();
         this.imageUrl = parcel.readString();
+        this.trackUrl = parcel.readString();
     }
 
     public static Parcelable.Creator CREATOR = new Creator<TrackModel>() {

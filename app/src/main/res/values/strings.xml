@@ -13,4 +13,7 @@
     <string name="track_name_placeholder">Track Name</string>
     <string name="album_name_placeholder">Album Name</string>
     <string name="artist_name_placeholder">Artist Name</string>
+    <string name="title_activity_track_player">TrackPlayerActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>

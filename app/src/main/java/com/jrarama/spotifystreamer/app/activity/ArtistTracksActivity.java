@@ -6,8 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.jrarama.spotifystreamer.app.R;
+import com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment;
+import com.jrarama.spotifystreamer.app.fragment.TrackPlayerFragment;
+import com.jrarama.spotifystreamer.app.model.TrackModel;
 
-public class ArtistTracksActivity extends AppCompatActivity {
+import java.util.ArrayList;
+
+public class ArtistTracksActivity extends AppCompatActivity implements ArtistTracksFragment.Callback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,4 +29,12 @@ public class ArtistTracksActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onItemSelected(int position, String artistName, ArrayList<TrackModel> tracks) {
+        Intent intent = new Intent(this, TrackPlayerActivity.class);
+        intent.putExtra(TrackPlayerFragment.ARTIST_NAME, artistName);
+        intent.putExtra(TrackPlayerFragment.POSITION, position);
+        intent.putParcelableArrayListExtra(TrackPlayerFragment.TRACKS, tracks);
+        startActivity(intent);
+    }
 }

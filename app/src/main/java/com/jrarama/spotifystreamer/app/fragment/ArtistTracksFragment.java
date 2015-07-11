@@ -1,12 +1,15 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +29,11 @@ public class ArtistTracksFragment extends Fragment {
     private String mArtistId;
     private ListView tracksList;
     private TextView tracksText;
+
+
+    public interface Callback {
+        void onItemSelected(int position, String artistName, ArrayList<TrackModel> tracks);
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -69,7 +77,20 @@ public class ArtistTracksFragment extends Fragment {
             setViewVisibility();
         }
 
+        final Activity activity = getActivity();
         tracksList.setAdapter(artistTrackAdapter);
+        tracksList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(LOG_TAG, "Selected track no: " + position + ", Track name: " + mTracks.get(position).getTitle());
+                Callback callback = (Callback) activity;
+                if (callback == null) {
+                    Log.e(LOG_TAG, "Parent activity does not implement " + Callback.class.getName());
+                    return;
+                }
+                callback.onItemSelected(position, mArtistId, mTracks);
+            }
+        });
         return rootView;
     }
 
