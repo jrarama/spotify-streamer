@@ -1,8 +1,7 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.content.Intent;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -22,17 +21,21 @@ import com.jrarama.spotifystreamer.app.task.ArtistTracksFetcherTask;
 import java.util.ArrayList;
 
 public class ArtistTracksFragment extends Fragment {
+    public static final String ARTIST_ID = "artist_id";
+    public static final String ARTIST_NAME = "artist_name";
+
     private static final String LOG_TAG = ArtistTracksFragment.class.getSimpleName();
     private ArtistTrackAdapter artistTrackAdapter;
     private ArrayList<TrackModel> mTracks;
     private static final String TRACKS_KEY = "tracks";
     private String mArtistId;
+    private String mArtistName;
     private ListView tracksList;
     private TextView tracksText;
 
 
     public interface Callback {
-        void onItemSelected(int position, String artistName, ArrayList<TrackModel> tracks);
+        void onTrackSelected(int position, ArrayList<TrackModel> tracks);
     }
 
     @Override
@@ -43,11 +46,10 @@ public class ArtistTracksFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        Intent intent = getActivity().getIntent();
-        if (intent != null) {
-            mArtistId = intent.getStringExtra(Intent.EXTRA_UID);
+        Bundle args = getArguments();
+        if (args != null) {
+            mArtistId = args.getString(ARTIST_ID);
+            mArtistName = args.getString(ARTIST_NAME);
         }
 
         if (savedInstanceState != null) {
@@ -63,6 +65,7 @@ public class ArtistTracksFragment extends Fragment {
         );
 
         artistTrackAdapter.setNotifyOnChange(false);
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -88,7 +91,7 @@ public class ArtistTracksFragment extends Fragment {
                     Log.e(LOG_TAG, "Parent activity does not implement " + Callback.class.getName());
                     return;
                 }
-                callback.onItemSelected(position, mArtistId, mTracks);
+                callback.onTrackSelected(position, mTracks);
             }
         });
         return rootView;

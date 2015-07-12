@@ -11,12 +11,13 @@
         >
     </android.support.v7.widget.Toolbar>
 
-    <fragment
-        android:id="@+id/fragment_artist_tracts"
+    <FrameLayout
+        android:id="@+id/artist_tracks_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_artist_tracks"
-        android:name="com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment"
         android:layout_below="@+id/artist_track_toolbar"
-        />
+        >
+
+    </FrameLayout>
+
 </RelativeLayout>

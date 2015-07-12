@@ -1,5 +1,6 @@
 package com.jrarama.spotifystreamer.app.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -7,9 +8,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.jrarama.spotifystreamer.app.R;
+import com.jrarama.spotifystreamer.app.fragment.ArtistListFragment;
+import com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ArtistListFragment.Callback {
+
+    private boolean twoPane;
+    private static final String ARTISTTRACKSFRAGMENT_TAG = "ATFTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +25,17 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setLogo(R.mipmap.ic_launcher);
 
+        if (findViewById(R.id.fragment_artist_tracks) != null) {
+            twoPane = true;
+
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_artist_tracks, new ArtistTracksFragment(), ARTISTTRACKSFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            twoPane = false;
+        }
     }
 
     @Override
@@ -41,5 +58,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onArtistSelected(String id, String name) {
+        if (!twoPane) {
+            Intent intent = new Intent(this, ArtistTracksActivity.class)
+                    .putExtra(Intent.EXTRA_TITLE, name)
+                    .putExtra(Intent.EXTRA_UID, id);
+            startActivity(intent);
+        } else {
+            Bundle args = new Bundle();
+            args.putString(ArtistTracksFragment.ARTIST_ID, id);
+            args.putString(ArtistTracksFragment.ARTIST_NAME, name);
+
+            ArtistTracksFragment fragment = new ArtistTracksFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_artist_tracks, fragment, ARTISTTRACKSFRAGMENT_TAG)
+                    .commit();
+        }
     }
 }

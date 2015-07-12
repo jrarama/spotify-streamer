@@ -14,6 +14,8 @@ import java.util.ArrayList;
 
 public class ArtistTracksActivity extends AppCompatActivity implements ArtistTracksFragment.Callback {
 
+    private String artistName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,14 +25,26 @@ public class ArtistTracksActivity extends AppCompatActivity implements ArtistTra
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
-        if (intent != null) {
-            String name = intent.getStringExtra(Intent.EXTRA_TITLE);
-            toolbar.setSubtitle(name);
+        artistName = intent.getStringExtra(Intent.EXTRA_TITLE);
+        String id = intent.getStringExtra(Intent.EXTRA_UID);
+        toolbar.setSubtitle(artistName);
+
+        if (savedInstanceState == null) {
+            Bundle args = new Bundle();
+            args.putString(ArtistTracksFragment.ARTIST_ID, id);
+            args.putString(ArtistTracksFragment.ARTIST_NAME, artistName);
+
+            ArtistTracksFragment fragment = new ArtistTracksFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.artist_tracks_container, fragment)
+                    .commit();
         }
     }
 
     @Override
-    public void onItemSelected(int position, String artistName, ArrayList<TrackModel> tracks) {
+    public void onTrackSelected(int position, ArrayList<TrackModel> tracks) {
         Intent intent = new Intent(this, TrackPlayerActivity.class);
         intent.putExtra(TrackPlayerFragment.ARTIST_NAME, artistName);
         intent.putExtra(TrackPlayerFragment.POSITION, position);

@@ -1,7 +1,6 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Editable;
@@ -16,7 +15,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
-import com.jrarama.spotifystreamer.app.activity.ArtistTracksActivity;
 import com.jrarama.spotifystreamer.app.adapter.ArtistAdapter;
 import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.jrarama.spotifystreamer.app.task.ArtistFetcherTask;
@@ -89,10 +87,12 @@ public class ArtistListFragment extends Fragment {
 
                 if (artist != null) {
                     Log.d(LOG_TAG, "Selected artist: " + artist.getId() + ", " + artist.getName());
-                    Intent intent = new Intent(getActivity(), ArtistTracksActivity.class)
-                            .putExtra(Intent.EXTRA_TITLE, artist.getName())
-                            .putExtra(Intent.EXTRA_UID, artist.getId());
-                    startActivity(intent);
+                    Callback callback = (Callback) getActivity();
+                    if (callback != null) {
+                        callback.onArtistSelected(artist.getId(), artist.getName());
+                    } else {
+                        Log.e(LOG_TAG, "Parent activity does not implement " + Callback.class.getName());
+                    }
                 } else {
                     Toast.makeText(getActivity(), getString(R.string.error_no_artist_selected), Toast.LENGTH_SHORT).show();
                 }
@@ -160,5 +160,9 @@ public class ArtistListFragment extends Fragment {
             mArtistModels = artistModels;
             populateArtists();
         }
+    }
+
+    public interface Callback {
+        void onArtistSelected(String id, String name);
     }
 }

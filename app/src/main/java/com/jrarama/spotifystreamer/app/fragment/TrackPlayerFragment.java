@@ -2,10 +2,14 @@ package com.jrarama.spotifystreamer.app.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +23,7 @@ import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
+import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -34,11 +39,12 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
 
     private static final String LOG_TAG = TrackPlayerFragment.class.getSimpleName();
 
-    public static final String TRACKS = "tracks";
-    public static final String POSITION = "position";
-    public static final String ARTIST_NAME = "artist_name";
+    private MusicPlayerService musicPlayerService;
+    private Intent playIntent;
+    private boolean musicBound = false;
 
     private ArrayList<TrackModel> trackModels;
+
     private int currentTrack = 0;
     private String artistName;
     private static MediaPlayer mediaPlayer = new MediaPlayer();
@@ -46,37 +52,32 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
     private ViewHolder mHolder;
     private Timer mTimer;
 
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        Log.d(LOG_TAG, "Media finished playing");
-        trackFinished = true;
-        setNextTrack(1);
-        prepareTrack(true);
-    }
+    public static final String TRACKS = "tracks";
+    public static final String POSITION = "position";
+    public static final String ARTIST_NAME = "artist_name";
 
-    class ViewHolder {
-        private TextView artistName;
-        private TextView albumName;
-        private TextView trackTitle;
-        private ImageView trackImage;
-        private Button prevButton;
-        private Button playButton;
-        private Button nextButton;
-        private SeekBar seekBar;
-        private TextView currentSec;
-        private TextView duration;
+    private ServiceConnection trackServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicPlayerService.MusicBinder binder = (MusicPlayerService.MusicBinder) service;
+            musicPlayerService = binder.getService();
+            musicPlayerService.setTracks(trackModels);
+            musicBound = true;
+        }
 
-        public ViewHolder(View view) {
-            artistName = (TextView) view.findViewById(R.id.player_artist_name);
-            albumName = (TextView) view.findViewById(R.id.player_album_name);
-            trackTitle = (TextView) view.findViewById(R.id.player_track_name);
-            currentSec = (TextView) view.findViewById(R.id.player_seek_textview);
-            duration = (TextView) view.findViewById(R.id.player_duration_textview);
-            trackImage = (ImageView) view.findViewById(R.id.player_image);
-            prevButton = (Button) view.findViewById(R.id.player_prev_btn);
-            playButton = (Button) view.findViewById(R.id.player_play_btn);
-            nextButton = (Button) view.findViewById(R.id.player_next_btn);
-            seekBar = (SeekBar) view.findViewById(R.id.player_seekbar);
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+        }
+    };
+
+    private void bindService() {
+        Activity activity = getActivity();
+        if (playIntent != null) {
+
+            playIntent = new Intent(activity, MusicPlayerService.class);
+            activity.bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
+            activity.startService(playIntent);
         }
     }
 
@@ -94,6 +95,8 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
             currentTrack = intent.getIntExtra(POSITION, 0);
         }
 
+        bindService();
+
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
         mHolder = new ViewHolder(rootView);
 
@@ -103,8 +106,6 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
         mediaPlayer.setOnSeekCompleteListener(this);
         mediaPlayer.setOnCompletionListener(this);
 
-        setNextTrack(0);
-        prepareTrack(false);
         mHolder.playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,6 +133,8 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
         });
 
         setSeekBarEvent(mHolder.seekBar);
+        setNextTrack(0);
+        prepareTrack(true);
         return rootView;
     }
 
@@ -279,11 +282,20 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
     }
 
     @Override
+    public void onPause() {
+//        if(mTimer != null) {
+//            mTimer.cancel();
+//        }
+        super.onPause();
+    }
+
+    @Override
     public void onDestroy() {
-        mediaPlayer.stop();
-        mediaPlayer.release();
-        mediaPlayer = null;
-        mTimer.cancel();
+//        if (mediaPlayer != null) {
+//            mediaPlayer.stop();
+//            mediaPlayer.release();
+//            mediaPlayer = null;
+//        }
         super.onDestroy();
     }
 
@@ -291,5 +303,42 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Toast.makeText(getActivity(), "An error occured.", Toast.LENGTH_SHORT).show();
         return false;
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        Log.d(LOG_TAG, "Media finished playing");
+        trackFinished = true;
+
+        if (currentTrack + 1 < trackModels.size()) {
+            setNextTrack(1);
+            prepareTrack(true);
+        }
+    }
+
+    class ViewHolder {
+        private TextView artistName;
+        private TextView albumName;
+        private TextView trackTitle;
+        private ImageView trackImage;
+        private Button prevButton;
+        private Button playButton;
+        private Button nextButton;
+        private SeekBar seekBar;
+        private TextView currentSec;
+        private TextView duration;
+
+        public ViewHolder(View view) {
+            artistName = (TextView) view.findViewById(R.id.player_artist_name);
+            albumName = (TextView) view.findViewById(R.id.player_album_name);
+            trackTitle = (TextView) view.findViewById(R.id.player_track_name);
+            currentSec = (TextView) view.findViewById(R.id.player_seek_textview);
+            duration = (TextView) view.findViewById(R.id.player_duration_textview);
+            trackImage = (ImageView) view.findViewById(R.id.player_image);
+            prevButton = (Button) view.findViewById(R.id.player_prev_btn);
+            playButton = (Button) view.findViewById(R.id.player_play_btn);
+            nextButton = (Button) view.findViewById(R.id.player_next_btn);
+            seekBar = (SeekBar) view.findViewById(R.id.player_seekbar);
+        }
     }
 }
