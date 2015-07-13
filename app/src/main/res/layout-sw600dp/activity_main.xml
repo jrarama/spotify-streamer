@@ -7,8 +7,7 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/main_toolbar"
-        style="@style/ToolbarDefault"
-        >
+        style="@style/ToolbarDefault">
     </android.support.v7.widget.Toolbar>
 
     <LinearLayout
@@ -24,12 +23,13 @@
             android:name="com.jrarama.spotifystreamer.app.fragment.ArtistListFragment"
             />
 
-        <fragment
-            android:id="@+id/fragment_artist_tracks"
+        <FrameLayout
+            android:id="@+id/artist_tracks_container"
+            android:background="@drawable/border_left"
             style="@style/FragmentDetail"
-            tools:layout="@layout/fragment_artist_tracks"
-            android:name="com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment"
-            />
+            >
+
+        </FrameLayout>
 
     </LinearLayout>
 

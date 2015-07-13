@@ -25,12 +25,12 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
         setSupportActionBar(toolbar);
         toolbar.setLogo(R.mipmap.ic_launcher);
 
-        if (findViewById(R.id.fragment_artist_tracks) != null) {
+        if (findViewById(R.id.artist_tracks_container) != null) {
             twoPane = true;
 
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_artist_tracks, new ArtistTracksFragment(), ARTISTTRACKSFRAGMENT_TAG)
+                        .add(R.id.artist_tracks_container, new ArtistTracksFragment(), ARTISTTRACKSFRAGMENT_TAG)
                         .commit();
             }
         } else {
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
             fragment.setArguments(args);
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_artist_tracks, fragment, ARTISTTRACKSFRAGMENT_TAG)
+                    .replace(R.id.artist_tracks_container, fragment, ARTISTTRACKSFRAGMENT_TAG)
                     .commit();
         }
     }

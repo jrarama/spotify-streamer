@@ -44,12 +44,13 @@ public class ArtistTracksFragment extends Fragment {
         outState.putParcelableArrayList(TRACKS_KEY, mTracks);
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    private boolean init(@Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
         if (args != null) {
             mArtistId = args.getString(ARTIST_ID);
             mArtistName = args.getString(ARTIST_NAME);
+        } else {
+            return false;
         }
 
         if (savedInstanceState != null) {
@@ -65,13 +66,14 @@ public class ArtistTracksFragment extends Fragment {
         );
 
         artistTrackAdapter.setNotifyOnChange(false);
-        super.onCreate(savedInstanceState);
+        return true;
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_artist_tracks, container, false);
+        if (!init(savedInstanceState)) return rootView;
 
         tracksList = (ListView) rootView.findViewById(R.id.artist_tracks_list);
         tracksText = (TextView) rootView.findViewById(R.id.no_tracks_textview);
