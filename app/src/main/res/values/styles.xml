@@ -10,6 +10,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
         <item name="android:padding">@dimen/list_item_padding</item>
+        <item name="android:background">@drawable/touch_selector</item>
     </style>
     
     <style name="ListImageDefault">
@@ -18,7 +19,6 @@
     </style>
 
     <style name="ListViewDefault">
-        <item name="android:background">@drawable/touch_selector</item>
     </style>
 
     <style name="ToolbarDefault">
@@ -30,6 +30,7 @@
     
     <style name="DefaultTextView">
         <item name="android:textSize">16sp</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:duplicateParentState">true</item>
         <item name="android:textColor">@drawable/touch_text_selector</item>
