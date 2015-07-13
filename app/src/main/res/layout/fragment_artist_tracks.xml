@@ -13,6 +13,7 @@
         android:text="@string/error_no_tracks"/>
 
     <ListView
+        style="@style/ListViewDefault"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/artist_tracks_list">

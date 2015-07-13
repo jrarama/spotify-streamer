@@ -1,0 +1,9 @@
+<resources>
+    <style name="ListViewDefault">
+        <item name="android:choiceMode">singleChoice</item>
+    </style>
+
+    <style name="ListItemDefault.Selected" parent="ListItemDefault">
+        <item name="android:background">@drawable/touch_selector</item>
+    </style>
+</resources>

@@ -17,6 +17,10 @@
         <item name="android:layout_height">@dimen/artist_image_size</item>
     </style>
 
+    <style name="ListViewDefault">
+        <item name="android:background">@drawable/touch_selector</item>
+    </style>
+
     <style name="ToolbarDefault">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -27,6 +31,8 @@
     <style name="DefaultTextView">
         <item name="android:textSize">16sp</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:duplicateParentState">true</item>
+        <item name="android:textColor">@drawable/touch_text_selector</item>
     </style>
 
     <style name="PaddedDefault">
