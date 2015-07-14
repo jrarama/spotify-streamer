@@ -2,6 +2,9 @@ package com.jrarama.spotifystreamer.app.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -10,12 +13,17 @@ import android.view.MenuItem;
 import com.jrarama.spotifystreamer.app.R;
 import com.jrarama.spotifystreamer.app.fragment.ArtistListFragment;
 import com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment;
+import com.jrarama.spotifystreamer.app.fragment.TrackPlayerFragment;
+import com.jrarama.spotifystreamer.app.model.TrackModel;
+
+import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements ArtistListFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ArtistListFragment.Callback, ArtistTracksFragment.Callback {
 
     private boolean twoPane;
-    private static final String ARTISTTRACKSFRAGMENT_TAG = "ATFTAG";
+    private static final String ARTISTTRACKSFRAGMENT_TAG = "tracks_list";
+    private static final String PLAYER_TAG = "track_player";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,5 +87,20 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
                     .replace(R.id.artist_tracks_container, fragment, ARTISTTRACKSFRAGMENT_TAG)
                     .commit();
         }
+    }
+
+    @Override
+    public void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks) {
+
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag(PLAYER_TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        TrackPlayerFragment dialog = TrackPlayerFragment.newInstance(tracks, artistName, position, true);
+        dialog.show(fm, PLAYER_TAG);
     }
 }

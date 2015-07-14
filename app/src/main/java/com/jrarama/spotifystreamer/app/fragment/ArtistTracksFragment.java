@@ -35,7 +35,7 @@ public class ArtistTracksFragment extends Fragment {
 
 
     public interface Callback {
-        void onTrackSelected(int position, ArrayList<TrackModel> tracks);
+        void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class ArtistTracksFragment extends Fragment {
                     Log.e(LOG_TAG, "Parent activity does not implement " + Callback.class.getName());
                     return;
                 }
-                callback.onTrackSelected(position, mTracks);
+                callback.onTrackSelected(position, mArtistName, mTracks);
             }
         });
         return rootView;

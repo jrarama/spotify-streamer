@@ -1,5 +1,6 @@
 package com.jrarama.spotifystreamer.app.activity;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -44,7 +45,7 @@ public class ArtistTracksActivity extends AppCompatActivity implements ArtistTra
     }
 
     @Override
-    public void onTrackSelected(int position, ArrayList<TrackModel> tracks) {
+    public void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks) {
         Intent intent = new Intent(this, TrackPlayerActivity.class);
         intent.putExtra(TrackPlayerFragment.ARTIST_NAME, artistName);
         intent.putExtra(TrackPlayerFragment.POSITION, position);

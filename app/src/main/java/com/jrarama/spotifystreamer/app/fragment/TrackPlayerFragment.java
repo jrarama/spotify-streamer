@@ -1,7 +1,7 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,10 +11,12 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -34,7 +36,7 @@ import java.util.TimerTask;
 /**
  * Created by Joshua on 9/7/2015.
  */
-public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPreparedListener,
+public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnCompletionListener {
 
     private static final String LOG_TAG = TrackPlayerFragment.class.getSimpleName();
@@ -47,7 +49,7 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
 
     private int currentTrack = 0;
     private String artistName;
-    private static MediaPlayer mediaPlayer = new MediaPlayer();
+    private MediaPlayer mediaPlayer;
     private boolean trackFinished;
     private ViewHolder mHolder;
     private Timer mTimer;
@@ -55,6 +57,7 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
     public static final String TRACKS = "tracks";
     public static final String POSITION = "position";
     public static final String ARTIST_NAME = "artist_name";
+    public static final String TABLET = "tablet";
 
     private ServiceConnection trackServiceConnection = new ServiceConnection() {
         @Override
@@ -81,18 +84,31 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
         }
     }
 
+    public static TrackPlayerFragment newInstance(ArrayList<TrackModel> tracks, String artistName, int currentTrack, boolean tablet) {
+        TrackPlayerFragment fragment = new TrackPlayerFragment();
+        Bundle args = new Bundle();
+        args.putParcelableArrayList(TRACKS, tracks);
+        args.putString(ARTIST_NAME, artistName);
+        args.putInt(POSITION, currentTrack);
+        args.putBoolean(TABLET, tablet);
+        fragment.setArguments(args);
+        fragment.setStyle(DialogFragment.STYLE_NO_TITLE, android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth);
+        return fragment;
+    }
+
     public TrackPlayerFragment() {
     }
+
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Activity activity = getActivity();
-        Intent intent = activity.getIntent();
-        if (intent != null) {
-            trackModels = intent.getParcelableArrayListExtra(TRACKS);
-            artistName = intent.getStringExtra(ARTIST_NAME);
-            currentTrack = intent.getIntExtra(POSITION, 0);
+        Bundle args = getArguments();
+        if (args != null) {
+            trackModels = args.getParcelableArrayList(TRACKS);
+            artistName = args.getString(ARTIST_NAME);
+            currentTrack = args.getInt(POSITION, 0);
         }
 
         bindService();
@@ -205,6 +221,7 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
             @Override
             public void run() {
                 final TimerTask task = this;
+                if (mediaPlayer == null) return;
                 final int curPos = mediaPlayer.getCurrentPosition() / 1000;
                 Log.d(LOG_TAG, "Current Position: " + curPos + ", Duration: " + duration);
                 getActivity().runOnUiThread(new Runnable() {
@@ -283,19 +300,20 @@ public class TrackPlayerFragment extends Fragment implements MediaPlayer.OnPrepa
 
     @Override
     public void onPause() {
-//        if(mTimer != null) {
-//            mTimer.cancel();
-//        }
+        if(mTimer != null) {
+            mTimer.cancel();
+        }
+        mediaPlayer.pause();
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
-//        if (mediaPlayer != null) {
-//            mediaPlayer.stop();
-//            mediaPlayer.release();
-//            mediaPlayer = null;
-//        }
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        mediaPlayer = null;
         super.onDestroy();
     }
 
