@@ -1,34 +1,31 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
 import android.app.Activity;
-import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -36,23 +33,21 @@ import java.util.TimerTask;
 /**
  * Created by Joshua on 9/7/2015.
  */
-public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnCompletionListener {
+public class TrackPlayerFragment extends DialogFragment {
 
     private static final String LOG_TAG = TrackPlayerFragment.class.getSimpleName();
 
     private MusicPlayerService musicPlayerService;
-    private Intent playIntent;
+    private BroadcastReceiver receiver;
     private boolean musicBound = false;
 
     private ArrayList<TrackModel> trackModels;
 
     private int currentTrack = 0;
     private String artistName;
-    private MediaPlayer mediaPlayer;
-    private boolean trackFinished;
     private ViewHolder mHolder;
     private Timer mTimer;
+    private MusicPlayerService.Status status;
 
     public static final String TRACKS = "tracks";
     public static final String POSITION = "position";
@@ -66,6 +61,9 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
             musicPlayerService = binder.getService();
             musicPlayerService.setTracks(trackModels);
             musicBound = true;
+
+            setNextTrack(currentTrack);
+            playMedia();
         }
 
         @Override
@@ -76,12 +74,9 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
 
     private void bindService() {
         Activity activity = getActivity();
-        if (playIntent != null) {
-
-            playIntent = new Intent(activity, MusicPlayerService.class);
-            activity.bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
-            activity.startService(playIntent);
-        }
+        Intent playIntent = new Intent(activity, MusicPlayerService.class);
+        activity.bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
+        activity.startService(playIntent);
     }
 
     public static TrackPlayerFragment newInstance(ArrayList<TrackModel> tracks, String artistName, int currentTrack, boolean tablet) {
@@ -99,6 +94,25 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
     public TrackPlayerFragment() {
     }
 
+    private void getBroadcastStatus(Intent intent) {
+        if (intent == null) return;
+        status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
+
+        Log.d(LOG_TAG, "Broadcast received: " + status.name());
+        switch (status) {
+            case PREPARED:
+                onPrepared();
+                break;
+            case PLAYING:
+                playMediaReady();
+                break;
+            case PAUSED:
+            case STOPPED:
+            case COMPLETED:
+                mediaPaused();
+                break;
+        }
+    }
 
 
     @Nullable
@@ -112,15 +126,15 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
         }
 
         bindService();
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                getBroadcastStatus(intent);
+            }
+        };
 
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
         mHolder = new ViewHolder(rootView);
-
-        mediaPlayer = mediaPlayer != null ? mediaPlayer : new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.setOnPreparedListener(this);
-        mediaPlayer.setOnSeekCompleteListener(this);
-        mediaPlayer.setOnCompletionListener(this);
 
         mHolder.playButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,7 +149,7 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
             public void onClick(View v) {
                 Log.d(LOG_TAG, "Playing next track");
                 setNextTrack(1);
-                prepareTrack(true);
+                playMedia();
             }
         });
 
@@ -144,24 +158,35 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
             public void onClick(View v) {
                 Log.d(LOG_TAG, "Playing previous track");
                 setNextTrack(-1);
-                prepareTrack(true);
+                playMedia();
             }
         });
 
         setSeekBarEvent(mHolder.seekBar);
-        setNextTrack(0);
-        prepareTrack(true);
         return rootView;
+    }
+
+    private void playMedia() {
+        switch (musicPlayerService.getStatus()) {
+            case PLAYING:
+                mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_pause);
+                musicPlayerService.pauseTrack();
+                break;
+            default:
+                mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_play);
+                musicPlayerService.playTrack();
+                break;
+        }
     }
 
     private void setNextTrack(int increment) {
         currentTrack += increment;
         currentTrack = Math.max(0, Math.min(trackModels.size() - 1, currentTrack));
-    }
+        musicPlayerService.setTrack(currentTrack);
 
-    private void prepareTrack(boolean play) {
         Activity activity = getActivity();
         TrackModel track = trackModels.get(currentTrack);
+
         Log.d(LOG_TAG, "ArtistName: " + artistName + ", Position: " + currentTrack + ", Track: " +
                 track.getTitle() + ", url: " + track.getTrackUrl());
 
@@ -174,18 +199,6 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
         String trackUrl = trackModels.get(currentTrack).getTrackUrl();
 
         Log.d(LOG_TAG, "Starting track: " + trackUrl);
-        try {
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(trackUrl);
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Track not found: " + trackUrl);
-            Toast.makeText(activity, "Track file not found", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-
-        if (play) {
-            playMedia();
-        }
     }
 
     private void setSeekBarEvent(SeekBar seekBar) {
@@ -203,64 +216,56 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 Log.d(LOG_TAG, "Seeking media position");
-                mediaPlayer.seekTo(seekBar.getProgress() * 1000);
+                musicPlayerService.seekTo(seekBar.getProgress());
             }
         });
     }
 
     private void playMediaReady() {
-        int playPos = mHolder.seekBar.getProgress() * 1000;
+        int playPos = mHolder.seekBar.getProgress();
         Log.d(LOG_TAG, "Playing media at : " + playPos);
 
-        mediaPlayer.seekTo(playPos);
+        musicPlayerService.seekTo(playPos);
         mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_pause);
-        final int duration = mediaPlayer.getDuration() / 1000;
+        final int duration = musicPlayerService.getDuration();
 
         mTimer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 final TimerTask task = this;
-                if (mediaPlayer == null) return;
-                final int curPos = mediaPlayer.getCurrentPosition() / 1000;
-                Log.d(LOG_TAG, "Current Position: " + curPos + ", Duration: " + duration);
+                if (status != MusicPlayerService.Status.PLAYING) {
+                    boolean cancel = task.cancel();
+                    if(!cancel) mTimer.cancel();
+                    return;
+                }
+
+                final int curPos = musicPlayerService.getTrackCurrentPosition();
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mHolder.seekBar.setProgress(curPos);
-                        mHolder.currentSec.setText(formatSeconds(curPos));
+                        setTimeLabels(duration, curPos);
 
                         if (curPos >= duration) {
-                            task.cancel();
                             pauseMedia();
-                            initMediaPlayer();
+                            setTimeLabels(duration, 0);
+                            task.cancel();
                         }
                     }
                 });
             }
         };
-        mTimer.scheduleAtFixedRate(task, 0, 500);
+        mTimer.scheduleAtFixedRate(task, 0, 1000);
     }
 
     private void pauseMedia() {
         Log.d(LOG_TAG, "Pausing media");
-        mediaPlayer.pause();
-        mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_play);
-        mTimer.cancel();
+        musicPlayerService.pauseTrack();
     }
 
-    public void playMedia() {
-        if (mediaPlayer.isPlaying()) {
-            pauseMedia();
-        } else {
-            try {
-                mediaPlayer.prepareAsync(); // prepare async to not block main thread
-            } catch (IllegalStateException ex) {
-
-                Log.e(LOG_TAG, "Media player is already prepared. " + ex.getMessage());
-                playMediaReady();
-            }
-        }
+    private void mediaPaused() {
+        mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_play);
+        mTimer.cancel();
     }
 
     private String formatSeconds(int sec) {
@@ -270,68 +275,43 @@ public class TrackPlayerFragment extends DialogFragment implements MediaPlayer.O
         return String.format("%d:%02d", mins, mod);
     }
 
+    private void setTimeLabels(int duration, int curPos) {
+        int sec = duration / 1000;
+        int pos = curPos / 1000;
 
-    @Override
-    public void onSeekComplete(MediaPlayer mp) {
-        /*if (!mp.isPlaying() && !trackFinished) {
-            Log.d(LOG_TAG, "Not playing after seek. Playing media.");
-            mp.start();
-        }*/
+        mHolder.seekBar.setMax(duration);
+        mHolder.seekBar.setProgress(curPos);
+        mHolder.currentSec.setText(formatSeconds(pos));
+        mHolder.duration.setText(formatSeconds(sec));
+
+
+        Log.d(LOG_TAG, "Current Position: " + pos + ", Duration: " + sec);
     }
 
     private void initMediaPlayer() {
         Log.d(LOG_TAG, "Initializing media player.");
-        int duration = mediaPlayer.getDuration();
-        int sec = duration / 1000;
-
-        mHolder.seekBar.setMax(sec);
-        mHolder.seekBar.setProgress(0);
-        mHolder.currentSec.setText(formatSeconds(0));
-        mHolder.duration.setText(formatSeconds(sec));
+        int duration = musicPlayerService.getDuration();
+        setTimeLabels(duration, 0);
     }
-    @Override
-    public void onPrepared(MediaPlayer mp) {
+
+    public void onPrepared() {
         Log.d(LOG_TAG, "Media player is prepared.");
-        trackFinished = false;
         initMediaPlayer();
-        mediaPlayer.start();
         playMediaReady();
     }
 
     @Override
-    public void onPause() {
-        if(mTimer != null) {
-            mTimer.cancel();
-        }
-        mediaPlayer.pause();
-        super.onPause();
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
+                receiver, new IntentFilter(MusicPlayerService.MESSAGE_TAG)
+        );
     }
 
     @Override
-    public void onDestroy() {
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
-        mediaPlayer = null;
-        super.onDestroy();
-    }
-
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        Toast.makeText(getActivity(), "An error occured.", Toast.LENGTH_SHORT).show();
-        return false;
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        Log.d(LOG_TAG, "Media finished playing");
-        trackFinished = true;
-
-        if (currentTrack + 1 < trackModels.size()) {
-            setNextTrack(1);
-            prepareTrack(true);
-        }
+    public void onStop() {
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
+        super.onStop();
     }
 
     class ViewHolder {
