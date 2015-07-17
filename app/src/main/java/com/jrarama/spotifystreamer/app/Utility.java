@@ -9,6 +9,12 @@ import kaaes.spotify.webapi.android.models.Image;
  */
 public class Utility {
 
+    private static final String LOG_PREFIX = "JprSpotify.";
+
+    public static String getLogTag(Class<?> cls) {
+        return LOG_PREFIX + cls.getSimpleName();
+    }
+
     public static String getImageUrlBySize(List<Image> images, int size) {
 
         if (images == null || images.isEmpty()) return null;

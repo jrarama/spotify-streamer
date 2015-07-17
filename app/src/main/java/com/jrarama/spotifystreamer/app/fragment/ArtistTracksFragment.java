@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
+import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.adapter.ArtistTrackAdapter;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 import com.jrarama.spotifystreamer.app.task.ArtistTracksFetcherTask;
@@ -24,7 +25,7 @@ public class ArtistTracksFragment extends Fragment {
     public static final String ARTIST_ID = "artist_id";
     public static final String ARTIST_NAME = "artist_name";
 
-    private static final String LOG_TAG = ArtistTracksFragment.class.getSimpleName();
+    private static final String LOG_TAG = Utility.getLogTag(ArtistTracksFragment.class);
     private ArtistTrackAdapter artistTrackAdapter;
     private ArrayList<TrackModel> mTracks;
     private static final String TRACKS_KEY = "tracks";

@@ -21,7 +21,7 @@ import retrofit.RetrofitError;
  */
 public class ArtistTracksFetcherTask extends AsyncTask<String, Void, ArrayList<TrackModel>> {
 
-    private static final String LOG_TAG = ArtistTracksFetcherTask.class.getSimpleName();
+    private static final String LOG_TAG = Utility.getLogTag(ArtistTracksFetcherTask.class);
     private SpotifyService spotifyService;
 
     public ArtistTracksFetcherTask() {
