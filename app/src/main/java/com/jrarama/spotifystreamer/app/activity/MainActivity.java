@@ -1,9 +1,12 @@
 package com.jrarama.spotifystreamer.app.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -30,11 +33,12 @@ import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements ArtistListFragment.Callback, ArtistTracksFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ArtistListFragment.Callback, ArtistTracksFragment.Callback, OnDismissListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private boolean twoPane;
+    private boolean dialogShown = false;
     private static final String ARTISTTRACKS_TAG = "tracks_list";
     private static final String PLAYER_TAG = "track_player";
 
@@ -158,7 +162,10 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
 
     @Override
     public void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks) {
-
+        if (dialogShown) {
+            return;
+        }
+        dialogShown = true;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         Fragment prev = fm.findFragmentByTag(PLAYER_TAG);
@@ -166,10 +173,11 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
             ft.remove(prev);
         }
         ft.addToBackStack(null);
-        ft.commit();
 
         TrackPlayerFragment dialog = TrackPlayerFragment.newInstance(tracks, artistName, position, true);
         dialog.show(fm, PLAYER_TAG);
+
+        ft.commit();
     }
 
     @Override
@@ -200,5 +208,10 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
             unbindService(trackServiceConnection);
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        dialogShown = false;
     }
 }
