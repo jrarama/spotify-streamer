@@ -113,6 +113,11 @@ public class TrackPlayerFragment extends DialogFragment {
             case COMPLETED:
                 mediaCompleted();
                 break;
+        }
+
+        switch (status) {
+            case PLAYING:
+            case PAUSED:
             case CHANGETRACK:
                 initMediaPropertyLabels();
                 break;
@@ -180,6 +185,7 @@ public class TrackPlayerFragment extends DialogFragment {
             }
         });
 
+        initMediaPropertyLabels();
         mHolder.seekBar.setEnabled(false);
         setSeekBarEvent(mHolder.seekBar);
         return rootView;
@@ -293,6 +299,7 @@ public class TrackPlayerFragment extends DialogFragment {
     private void pauseMedia() {
         Log.d(LOG_TAG, "Pausing media");
         musicPlayerService.pauseTrack();
+        mediaPaused();
     }
 
     private void mediaPaused() {

@@ -107,15 +107,18 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     public void setTrack(int index) {
-        currentTrack = Utility.clamp(index, 0, trackModels.size() - 1);
-
-        if (status == Status.PLAYING) {
-            mediaPlayer.pause();
+        if (index == currentTrack && (status == Status.PLAYING || status == Status.PAUSED)) {
+            Log.d(LOG_TAG, "Same track is set");
+            sendStatus();
+        } else {
+            currentTrack = Utility.clamp(index, 0, trackModels.size() - 1);
+            status = Status.CHANGETRACK;
+            if (status == Status.PLAYING) {
+                mediaPlayer.pause();
+            }
+            sendStatus();
+            prepareTrack();
         }
-        status = Status.CHANGETRACK;
-        sendStatus();
-
-        prepareTrack();
     }
 
     public void seekTo(int miliSec) {
@@ -208,11 +211,6 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     @Override
     public void onSeekComplete(MediaPlayer mp) {
 
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY;
     }
 
     public class MusicBinder extends Binder {

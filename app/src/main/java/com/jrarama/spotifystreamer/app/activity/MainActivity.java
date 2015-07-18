@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
             ft.remove(prev);
         }
         ft.addToBackStack(null);
+        ft.commit();
 
         TrackPlayerFragment dialog = TrackPlayerFragment.newInstance(tracks, artistName, position, true);
         dialog.show(fm, PLAYER_TAG);
