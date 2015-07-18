@@ -1,5 +1,9 @@
 package com.jrarama.spotifystreamer.app;
 
+import android.content.Intent;
+
+import com.jrarama.spotifystreamer.app.model.TrackModel;
+
 import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Image;
@@ -31,5 +35,15 @@ public class Utility {
 
     public static int clamp(int number, int min, int max) {
         return Math.max(min, Math.min(max, number));
+    }
+
+    public static Intent createShareIntent(String artistName, TrackModel track) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("text/plain");
+
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "Listen to " + artistName + "'s song : " +
+                track.getTitle() + " at " + track.getTrackUrl());
+        return shareIntent;
     }
 }

@@ -16,7 +16,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -41,6 +43,8 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
     private boolean dialogShown = false;
     private static final String ARTISTTRACKS_TAG = "tracks_list";
     private static final String PLAYER_TAG = "track_player";
+    private ShareActionProvider mShareActionProvider;
+    private MenuItem mShareMenu;
 
     private void changeTrack(int currentTrack) {
         if (twoPane) {
@@ -68,7 +72,22 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         switch (status) {
             case CHANGETRACK:
                 changeTrack(currentTrack);
+                setShareOptions();
                 break;
+        }
+    }
+
+    private void setShareOptions() {
+        boolean visible = mShareActionProvider != null && musicPlayerService != null;
+        if (mShareMenu != null) {
+            mShareMenu.setVisible(visible);
+        }
+
+        if (visible) {
+            mShareActionProvider.setShareIntent(Utility.createShareIntent(
+                    musicPlayerService.getArtistName(),
+                    musicPlayerService.getCurrentTrackModel()
+            ));
         }
     }
 
@@ -98,6 +117,9 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        mShareMenu = menu.findItem(R.id.action_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareMenu);
+
         return true;
     }
 

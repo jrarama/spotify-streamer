@@ -61,6 +61,7 @@ public class TrackPlayerFragment extends DialogFragment {
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicPlayerService.MusicBinder binder = (MusicPlayerService.MusicBinder) service;
             musicPlayerService = binder.getService();
+            musicPlayerService.setArtistName(artistName);
             musicPlayerService.setTracks(trackModels);
             musicBound = true;
 

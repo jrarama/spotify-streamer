@@ -30,6 +30,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     private LocalBroadcastManager broadcastManager;
     private static final String CURRENT_TRACK = "track";
     private static final String CURRENT_POSITION = "position";
+    private String artistName;
 
     public static final String STATUS = "status";
 
@@ -102,6 +103,14 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         broadcastManager.sendBroadcast(intent);
     }
 
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
+    }
+
+    public String getArtistName() {
+        return artistName;
+    }
+
     public Status getStatus() {
         return status;
     }
@@ -127,6 +136,10 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public int getCurrentTrack() {
         return currentTrack;
+    }
+
+    public TrackModel getCurrentTrackModel() {
+        return trackModels.get(currentTrack);
     }
 
     public int getDuration() {
