@@ -11,6 +11,7 @@ import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 
 import java.io.IOException;
@@ -106,7 +107,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     public void setTrack(int index) {
-        currentTrack = Math.max(0, Math.min(trackModels.size() - 1, index));
+        currentTrack = Utility.clamp(index, 0, trackModels.size() - 1);
 
         if (status == Status.PLAYING) {
             mediaPlayer.pause();
@@ -117,22 +118,12 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         prepareTrack();
     }
 
-    public void nextTrack() {
-        mediaPlayer.pause();
-        setTrack(currentTrack + 1);
-        prepareTrack();
-        sendStatus();
-    }
-
-    public void prevTrack() {
-        mediaPlayer.pause();
-        setTrack(currentTrack - 1);
-        prepareTrack();
-        sendStatus();
-    }
-
     public void seekTo(int miliSec) {
         mediaPlayer.seekTo(miliSec);
+    }
+
+    public int getCurrentTrack() {
+        return currentTrack;
     }
 
     public int getDuration() {
@@ -189,11 +180,15 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        mp.stop();
-        if (currentTrack + 1 >= trackModels.size()) {
-            return;
-        } else {
-            nextTrack();
+        try {
+            mp.stop();
+        } catch (IllegalStateException ex) {
+            Log.d(LOG_TAG, "Media player stopped when not initialized", ex);
+        }
+        status = Status.COMPLETED;
+        sendStatus();
+        if (currentTrack + 1 < trackModels.size()) {
+            setTrack(currentTrack + 1);
         }
     }
 

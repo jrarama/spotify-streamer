@@ -22,6 +22,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.jrarama.spotifystreamer.app.R;
+import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 import com.squareup.picasso.Picasso;
@@ -97,7 +98,7 @@ public class TrackPlayerFragment extends DialogFragment {
     private void getBroadcastStatus(Intent intent) {
         if (intent == null) return;
         status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
-
+        currentTrack = musicPlayerService.getCurrentTrack();
         Log.d(LOG_TAG, "Broadcast received: " + status.name());
         switch (status) {
             case PREPARED:
@@ -108,11 +109,28 @@ public class TrackPlayerFragment extends DialogFragment {
                 break;
             case PAUSED:
             case STOPPED:
-            case COMPLETED:
                 mediaPaused();
+                break;
+            case COMPLETED:
+                mediaCompleted();
                 break;
             case CHANGETRACK:
                 onChangeTrack();
+                break;
+        }
+
+        setSeekbarEnabled();
+    }
+
+    private void setSeekbarEnabled() {
+        switch (status) {
+            case PREPARED:
+            case PLAYING:
+            case PAUSED:
+                mHolder.seekBar.setEnabled(true);
+                break;
+            default:
+                mHolder.seekBar.setEnabled(false);
                 break;
         }
     }
@@ -165,6 +183,7 @@ public class TrackPlayerFragment extends DialogFragment {
             }
         });
 
+        mHolder.seekBar.setEnabled(false);
         setSeekBarEvent(mHolder.seekBar);
         return rootView;
     }
@@ -185,9 +204,14 @@ public class TrackPlayerFragment extends DialogFragment {
     private void onChangeTrack() {
         Activity activity = getActivity();
         TrackModel track = trackModels.get(currentTrack);
+        String trackUrl = trackModels.get(currentTrack).getTrackUrl();
+
+        Log.d(LOG_TAG, "Changing track: " + trackUrl);
 
         Log.d(LOG_TAG, "ArtistName: " + artistName + ", Position: " + currentTrack + ", Track: " +
                 track.getTitle() + ", url: " + track.getTrackUrl());
+
+        if (activity == null) return;
 
         mHolder.albumName.setText(track.getAlbumName());
         mHolder.artistName.setText(artistName);
@@ -195,15 +219,13 @@ public class TrackPlayerFragment extends DialogFragment {
         if (track.getImageUrl() != null) {
             Picasso.with(activity).load(track.getImageUrl()).fit().into(mHolder.trackImage);
         }
-        String trackUrl = trackModels.get(currentTrack).getTrackUrl();
 
-        setTimeLabels(0, 0);
-        Log.d(LOG_TAG, "Changing track: " + trackUrl);
+        setProgressLabel(0);
     }
 
     private void setNextTrack(int increment) {
         currentTrack += increment;
-        currentTrack = Math.max(0, Math.min(trackModels.size() - 1, currentTrack));
+        currentTrack = Utility.clamp(currentTrack, 0, trackModels.size() - 1);
         musicPlayerService.setTrack(currentTrack);
     }
 
@@ -222,6 +244,7 @@ public class TrackPlayerFragment extends DialogFragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 Log.d(LOG_TAG, "Seeking media position");
+                setTimeLabels(seekBar.getMax(), seekBar.getProgress());
                 musicPlayerService.seekTo(seekBar.getProgress());
             }
         });
@@ -254,14 +277,14 @@ public class TrackPlayerFragment extends DialogFragment {
 
                         if (curPos >= duration) {
                             pauseMedia();
-                            setTimeLabels(duration, 0);
+                            setProgressLabel(0);
                             task.cancel();
                         }
                     }
                 });
             }
         };
-        mTimer.scheduleAtFixedRate(task, 0, 1000);
+        mTimer.scheduleAtFixedRate(task, 0, 500);
     }
 
     private void pauseMedia() {
@@ -271,7 +294,14 @@ public class TrackPlayerFragment extends DialogFragment {
 
     private void mediaPaused() {
         mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_play);
-        mTimer.cancel();
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
+    }
+
+    private void mediaCompleted() {
+        mediaPaused();
+        setProgressLabel(0);
     }
 
     private String formatSeconds(int sec) {
@@ -281,17 +311,26 @@ public class TrackPlayerFragment extends DialogFragment {
         return String.format("%d:%02d", mins, mod);
     }
 
-    private void setTimeLabels(int duration, int curPos) {
-        int sec = duration / 1000;
+    private void setProgressLabel(int curPos) {
+        curPos = Utility.clamp(curPos, 0, mHolder.seekBar.getMax());
+
         int pos = curPos / 1000;
+        mHolder.currentSec.setText(formatSeconds(pos));
+        mHolder.seekBar.setProgress(curPos);
+        Log.d(LOG_TAG, "Current Track Position: " + pos);
+    }
+
+    private void setDurationLabel(int duration) {
+        int sec = duration / 1000;
 
         mHolder.seekBar.setMax(duration);
-        mHolder.seekBar.setProgress(curPos);
-        mHolder.currentSec.setText(formatSeconds(pos));
         mHolder.duration.setText(formatSeconds(sec));
+        Log.d(LOG_TAG, "Current Track Duration: " + sec);
+    }
 
-
-        Log.d(LOG_TAG, "Current Position: " + pos + ", Duration: " + sec);
+    private void setTimeLabels(int duration, int curPos) {
+        setDurationLabel(duration);
+        setProgressLabel(curPos);
     }
 
     private void initMediaPlayer() {

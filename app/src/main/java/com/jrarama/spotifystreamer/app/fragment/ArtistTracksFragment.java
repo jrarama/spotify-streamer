@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -98,6 +99,15 @@ public class ArtistTracksFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    public void setSelectedTrack(int position) {
+        Log.d(LOG_TAG, "Selecting track item orig: " + position);
+        int pos = Utility.clamp(position, 0, mTracks.size() - 1);
+        Log.d(LOG_TAG, "Selecting track item: " + pos);
+        tracksList.setSelection(pos);
+        tracksList.setItemChecked(pos, true);
+        tracksList.smoothScrollToPosition(pos);
     }
 
     private void fetchTracks() {
