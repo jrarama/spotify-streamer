@@ -111,6 +111,9 @@ public class TrackPlayerFragment extends DialogFragment {
             case COMPLETED:
                 mediaPaused();
                 break;
+            case CHANGETRACK:
+                onChangeTrack();
+                break;
         }
     }
 
@@ -179,11 +182,7 @@ public class TrackPlayerFragment extends DialogFragment {
         }
     }
 
-    private void setNextTrack(int increment) {
-        currentTrack += increment;
-        currentTrack = Math.max(0, Math.min(trackModels.size() - 1, currentTrack));
-        musicPlayerService.setTrack(currentTrack);
-
+    private void onChangeTrack() {
         Activity activity = getActivity();
         TrackModel track = trackModels.get(currentTrack);
 
@@ -198,7 +197,14 @@ public class TrackPlayerFragment extends DialogFragment {
         }
         String trackUrl = trackModels.get(currentTrack).getTrackUrl();
 
-        Log.d(LOG_TAG, "Starting track: " + trackUrl);
+        setTimeLabels(0, 0);
+        Log.d(LOG_TAG, "Changing track: " + trackUrl);
+    }
+
+    private void setNextTrack(int increment) {
+        currentTrack += increment;
+        currentTrack = Math.max(0, Math.min(trackModels.size() - 1, currentTrack));
+        musicPlayerService.setTrack(currentTrack);
     }
 
     private void setSeekBarEvent(SeekBar seekBar) {

@@ -40,7 +40,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         PAUSED,
         STOPPED,
         COMPLETED,
-        NEWTRACK
+        CHANGETRACK
     }
 
     private Status status;
@@ -107,7 +107,14 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public void setTrack(int index) {
         currentTrack = Math.max(0, Math.min(trackModels.size() - 1, index));
+
+        if (status == Status.PLAYING) {
+            mediaPlayer.pause();
+        }
+        status = Status.CHANGETRACK;
         sendStatus();
+
+        prepareTrack();
     }
 
     public void nextTrack() {
@@ -152,17 +159,14 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public void prepareTrack() {
         TrackModel track = trackModels.get(currentTrack);
-        if (!mediaPlayer.isPlaying()) {
-            try {
-                mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(track.getTrackUrl()));
-                status = Status.INITIALIZED;
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error setting data source: " + track.getTrackUrl(), e);
-            }
-            mediaPlayer.prepareAsync();
-        } else {
-            mediaPlayer.pause();
+        mediaPlayer.reset();
+        try {
+            mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(track.getTrackUrl()));
+            status = Status.INITIALIZED;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error setting data source: " + track.getTrackUrl(), e);
         }
+        mediaPlayer.prepareAsync();
     }
 
     public void playTrack() {
