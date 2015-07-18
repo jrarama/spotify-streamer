@@ -33,7 +33,7 @@ import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements ArtistListFragment.Callback, ArtistTracksFragment.Callback, OnDismissListener {
+public class MainActivity extends MusicServiceActivity implements ArtistListFragment.Callback, ArtistTracksFragment.Callback, OnDismissListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -42,41 +42,23 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
     private static final String ARTISTTRACKS_TAG = "tracks_list";
     private static final String PLAYER_TAG = "track_player";
 
-    private MusicPlayerService musicPlayerService;
-
-    private BroadcastReceiver receiver;
-    private boolean musicBound = false;
-
-    private ServiceConnection trackServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicPlayerService.MusicBinder binder = (MusicPlayerService.MusicBinder) service;
-            musicPlayerService = binder.getService();
-            musicBound = true;
-            Log.d(LOG_TAG, "Service connected");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d(LOG_TAG, "Service disconnected");
-            musicBound = false;
-        }
-    };
-
-    private void bindService() {
-        Log.d(LOG_TAG, "Binding to service");
-        Intent playIntent = new Intent(this, MusicPlayerService.class);
-        bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
-        startService(playIntent);
-    }
-
     private void changeTrack(int currentTrack) {
         FragmentManager fm = getSupportFragmentManager();
         ArtistTracksFragment fragment = (ArtistTracksFragment) fm.findFragmentByTag(ARTISTTRACKS_TAG);
         fragment.setSelectedTrack(currentTrack);
     }
 
-    private void getBroadcastStatus(Intent intent) {
+    @Override
+    void afterServiceConnected() {
+        Log.d(LOG_TAG, "Service connected");
+    }
+
+    @Override
+    void afterServiceDisconnected() {
+        Log.d(LOG_TAG, "Service disconnected");
+    }
+
+    void getBroadcastStatus(Intent intent) {
         if (intent == null) return;
         MusicPlayerService.Status status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
         int currentTrack = musicPlayerService.getCurrentTrack();
@@ -91,13 +73,6 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        bindService();
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                getBroadcastStatus(intent);
-            }
-        };
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
@@ -181,33 +156,11 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                receiver, new IntentFilter(MusicPlayerService.MESSAGE_TAG)
-        );
-    }
-
-    @Override
-    public void onStop() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-        super.onStop();
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         if (musicBound && musicPlayerService != null) {
             changeTrack(musicPlayerService.getCurrentTrack());
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (trackServiceConnection != null) {
-            unbindService(trackServiceConnection);
-        }
-        super.onDestroy();
     }
 
     @Override

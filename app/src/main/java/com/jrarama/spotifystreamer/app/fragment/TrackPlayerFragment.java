@@ -117,9 +117,10 @@ public class TrackPlayerFragment extends DialogFragment {
         }
 
         switch (status) {
+            case CHANGETRACK:
+                setProgressLabel(0);
             case PLAYING:
             case PAUSED:
-            case CHANGETRACK:
                 initMediaPropertyLabels();
                 break;
         }
@@ -236,8 +237,6 @@ public class TrackPlayerFragment extends DialogFragment {
         if (track.getImageUrl() != null) {
             Picasso.with(activity).load(track.getImageUrl()).fit().into(mHolder.trackImage);
         }
-
-        setProgressLabel(0);
     }
 
     private void setSeekBarEvent(SeekBar seekBar) {
