@@ -43,9 +43,11 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
     private static final String PLAYER_TAG = "track_player";
 
     private void changeTrack(int currentTrack) {
-        FragmentManager fm = getSupportFragmentManager();
-        ArtistTracksFragment fragment = (ArtistTracksFragment) fm.findFragmentByTag(ARTISTTRACKS_TAG);
-        fragment.setSelectedTrack(currentTrack);
+        if (twoPane) {
+            FragmentManager fm = getSupportFragmentManager();
+            ArtistTracksFragment fragment = (ArtistTracksFragment) fm.findFragmentByTag(ARTISTTRACKS_TAG);
+            fragment.setSelectedTrack(currentTrack);
+        }
     }
 
     @Override
