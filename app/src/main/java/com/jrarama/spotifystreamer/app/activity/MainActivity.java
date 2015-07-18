@@ -66,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
         startService(playIntent);
     }
 
+    private void changeTrack(int currentTrack) {
+        FragmentManager fm = getSupportFragmentManager();
+        ArtistTracksFragment fragment = (ArtistTracksFragment) fm.findFragmentByTag(ARTISTTRACKS_TAG);
+        fragment.setSelectedTrack(currentTrack);
+    }
+
     private void getBroadcastStatus(Intent intent) {
         if (intent == null) return;
         MusicPlayerService.Status status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
@@ -73,12 +79,8 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
         Log.d(LOG_TAG, "Broadcast received: " + status.name());
         switch (status) {
             case CHANGETRACK:
-            {
-                FragmentManager fm = getSupportFragmentManager();
-                ArtistTracksFragment fragment = (ArtistTracksFragment) fm.findFragmentByTag(ARTISTTRACKS_TAG);
-                fragment.setSelectedTrack(currentTrack);
-            }
-            break;
+                changeTrack(currentTrack);
+                break;
         }
     }
 
@@ -181,5 +183,21 @@ public class MainActivity extends AppCompatActivity implements ArtistListFragmen
     public void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (musicBound && musicPlayerService != null) {
+            changeTrack(musicPlayerService.getCurrentTrack());
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (trackServiceConnection != null) {
+            unbindService(trackServiceConnection);
+        }
+        super.onDestroy();
     }
 }

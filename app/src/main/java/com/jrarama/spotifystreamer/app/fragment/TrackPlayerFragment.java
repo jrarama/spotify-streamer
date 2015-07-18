@@ -63,8 +63,7 @@ public class TrackPlayerFragment extends DialogFragment {
             musicPlayerService.setTracks(trackModels);
             musicBound = true;
 
-            setNextTrack(currentTrack);
-            playMedia();
+            musicPlayerService.setTrack(currentTrack);
         }
 
         @Override
@@ -115,10 +114,10 @@ public class TrackPlayerFragment extends DialogFragment {
                 mediaCompleted();
                 break;
             case CHANGETRACK:
-                onChangeTrack();
+                initMediaPropertyLabels();
                 break;
         }
-
+        setButtonProperties();
         setSeekbarEnabled();
     }
 
@@ -169,8 +168,7 @@ public class TrackPlayerFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Log.d(LOG_TAG, "Playing next track");
-                setNextTrack(1);
-                playMedia();
+                musicPlayerService.setTrack(currentTrack + 1);
             }
         });
 
@@ -178,8 +176,7 @@ public class TrackPlayerFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Log.d(LOG_TAG, "Playing previous track");
-                setNextTrack(-1);
-                playMedia();
+                musicPlayerService.setTrack(currentTrack - 1);
             }
         });
 
@@ -188,25 +185,38 @@ public class TrackPlayerFragment extends DialogFragment {
         return rootView;
     }
 
+    private void setButtonProperties() {
+        switch (musicPlayerService.getStatus()) {
+            case PLAYING:
+                mHolder.playButton.setEnabled(true);
+                mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_pause);
+                break;
+            case INITIALIZED:
+            case PREPARED:
+                mHolder.playButton.setEnabled(false);
+            default:
+                mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_play);
+                break;
+        }
+    }
+
     private void playMedia() {
         switch (musicPlayerService.getStatus()) {
             case PLAYING:
-                mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_pause);
                 musicPlayerService.pauseTrack();
                 break;
             default:
-                mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_play);
                 musicPlayerService.playTrack();
                 break;
         }
     }
 
-    private void onChangeTrack() {
+    private void initMediaPropertyLabels() {
         Activity activity = getActivity();
         TrackModel track = trackModels.get(currentTrack);
         String trackUrl = trackModels.get(currentTrack).getTrackUrl();
 
-        Log.d(LOG_TAG, "Changing track: " + trackUrl);
+        Log.d(LOG_TAG, "Track url: " + trackUrl);
 
         Log.d(LOG_TAG, "ArtistName: " + artistName + ", Position: " + currentTrack + ", Track: " +
                 track.getTitle() + ", url: " + track.getTrackUrl());
@@ -221,12 +231,6 @@ public class TrackPlayerFragment extends DialogFragment {
         }
 
         setProgressLabel(0);
-    }
-
-    private void setNextTrack(int increment) {
-        currentTrack += increment;
-        currentTrack = Utility.clamp(currentTrack, 0, trackModels.size() - 1);
-        musicPlayerService.setTrack(currentTrack);
     }
 
     private void setSeekBarEvent(SeekBar seekBar) {
@@ -251,19 +255,18 @@ public class TrackPlayerFragment extends DialogFragment {
     }
 
     private void playMediaReady() {
-        int playPos = mHolder.seekBar.getProgress();
-        Log.d(LOG_TAG, "Playing media at : " + playPos);
-
-        musicPlayerService.seekTo(playPos);
-        mHolder.playButton.setBackgroundResource(android.R.drawable.ic_media_pause);
+        setButtonProperties();
         final int duration = musicPlayerService.getDuration();
 
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
         mTimer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 final TimerTask task = this;
-                if (status != MusicPlayerService.Status.PLAYING) {
+                if (status != MusicPlayerService.Status.PLAYING || getActivity() == null) {
                     boolean cancel = task.cancel();
                     if(!cancel) mTimer.cancel();
                     return;
@@ -336,7 +339,9 @@ public class TrackPlayerFragment extends DialogFragment {
     private void initMediaPlayer() {
         Log.d(LOG_TAG, "Initializing media player.");
         int duration = musicPlayerService.getDuration();
-        setTimeLabels(duration, 0);
+        int position = musicPlayerService.getStatus() == MusicPlayerService.Status.PLAYING ?
+                musicPlayerService.getTrackCurrentPosition():0;
+        setTimeLabels(duration, position);
     }
 
     public void onPrepared() {
@@ -357,6 +362,31 @@ public class TrackPlayerFragment extends DialogFragment {
     public void onStop() {
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
         super.onStop();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.d(LOG_TAG, "Resuming");
+
+        if (musicBound && musicPlayerService != null) {
+            currentTrack = musicPlayerService.getCurrentTrack();
+            Log.d(LOG_TAG, "Setting properties for track: " + currentTrack);
+            initMediaPropertyLabels();
+
+            if (musicPlayerService.getStatus() == MusicPlayerService.Status.PLAYING) {
+                onPrepared();
+            }
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (trackServiceConnection != null && getActivity() != null) {
+            getActivity().unbindService(trackServiceConnection);
+        }
+        super.onDestroy();
     }
 
     class ViewHolder {

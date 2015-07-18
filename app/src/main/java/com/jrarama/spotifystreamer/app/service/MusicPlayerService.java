@@ -210,6 +210,11 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
     public class MusicBinder extends Binder {
         public MusicPlayerService getService() {
             return MusicPlayerService.this;
