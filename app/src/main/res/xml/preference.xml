@@ -7,7 +7,7 @@
         android:title="@string/pref_country_label"
         android:key="@string/pref_country_key"
         android:defaultValue="@string/pref_country_default"
-        android:inputType="textCapWords"
+        android:inputType="textCapCharacters"
         android:maxLength="2"
         android:summary="@string/pref_country_summary"
         />

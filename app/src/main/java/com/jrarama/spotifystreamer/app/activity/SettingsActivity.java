@@ -6,47 +6,66 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
 import com.jrarama.spotifystreamer.app.R;
 
 /**
  * Created by joshua on 7/19/15.
  */
-public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
+public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preference);
+        setContentView(R.layout.activity_settings);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        buildPreferenceSummaryToValue(findPreference(getString(R.string.pref_country_key)));
+        if (savedInstanceState == null) {
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.settings_container, new SettingsFragment())
+                    .commit();
+        }
+
     }
 
-    private void buildPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(this);
+    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.preference);
 
-        // Trigger the listener immediately with the preference's
-        // current value.
-        onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
-    }
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_country_key)));
+        }
 
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object value) {
-        String stringValue = value.toString();
+        private void bindPreferenceSummaryToValue(Preference preference) {
+            // Set the listener to watch for value changes.
+            preference.setOnPreferenceChangeListener(this);
 
-        preference.setSummary(stringValue);
-        return true;
-    }
+            // Trigger the listener immediately with the preference's
+            // current value.
+            onPreferenceChange(preference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(preference.getContext())
+                            .getString(preference.getKey(), ""));
+        }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    @Override
-    public Intent getParentActivityIntent() {
-        return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            String key = preference.getKey();
+            if (key == getString(R.string.pref_country_key)) {
+
+                preference.setSummary(getString(R.string.pref_country_summary) + ": " + newValue.toString());
+            }
+
+            return true;
+        }
     }
 
 }
