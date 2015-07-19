@@ -4,17 +4,24 @@
 
     <string name="artist_search_hint">Enter Artist name</string>
     <string name="message_no_artist">No artists found! Please refine your search.</string>
-    <string name="title_activity_artist_tracks">Top 10 Tracks</string>
+    <string name="title_activity_artist_tracks">Top Tracks</string>
 
-    <string name="default_country_code">SG</string>
     <string name="error_invalid_artist_id">Invalid artist id.</string>
     <string name="error_no_artist_selected">No artist selected</string>
     <string name="error_no_tracks">No tracks for the selected artists.</string>
     <string name="track_name_placeholder">Track Name</string>
     <string name="album_name_placeholder">Album Name</string>
     <string name="artist_name_placeholder">Artist Name</string>
-    <string name="title_activity_track_player">TrackPlayerActivity</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_share">Share</string>
+
+    <string name="pref_country_label">Country</string>
+    <string name="pref_country_key" translatable="false">country</string>
+    <string name="pref_country_default" translatable="false">SG</string>
+    <string name="pref_country_summary">The 2 letter country code</string>
+    <string name="pref_notif_ctrl_label">Notification Controls</string>
+    <string name="pref_notif_key" translatable="false">notification</string>
+    <string name="pref_notif_summary">Check if you want to display music controls in the notification</string>
+    <string name="pref_notif_default">true</string>
+    <string name="settings_title">Settings</string>
 </resources>

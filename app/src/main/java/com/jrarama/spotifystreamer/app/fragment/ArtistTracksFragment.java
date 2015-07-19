@@ -102,6 +102,10 @@ public class ArtistTracksFragment extends Fragment {
     }
 
     public void setSelectedTrack(int position) {
+        if (mTracks == null) {
+            Log.d(LOG_TAG, "No tracks listed");
+            return;
+        }
         Log.d(LOG_TAG, "Selecting track item orig: " + position);
         int pos = Utility.clamp(position, 0, mTracks.size() - 1);
         Log.d(LOG_TAG, "Selecting track item: " + pos);
@@ -112,7 +116,7 @@ public class ArtistTracksFragment extends Fragment {
 
     private void fetchTracks() {
         if (mArtistId != null) {
-            new ArtistTrackFetcher().execute(mArtistId, getString(R.string.default_country_code));
+            new ArtistTrackFetcher().execute(mArtistId, Utility.getPreferredCountry(getActivity()));
         } else {
             Toast.makeText(getActivity(), getString(R.string.error_invalid_artist_id), Toast.LENGTH_SHORT).show();
         }

@@ -37,7 +37,7 @@ public class ArtistTracksFetcherTask extends AsyncTask<String, Void, ArrayList<T
 
         try {
             Log.d(LOG_TAG, "Fetching tracks for Artist: " + artistId);
-
+            Log.d(LOG_TAG, "Using Country: " + country);
             Map<String, Object> paramMap = new HashMap<>();
             paramMap.put("country", country);
 
