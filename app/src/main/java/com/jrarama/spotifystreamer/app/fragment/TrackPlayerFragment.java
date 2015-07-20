@@ -1,6 +1,8 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -8,16 +10,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -107,6 +112,7 @@ public class TrackPlayerFragment extends DialogFragment {
                 break;
             case PLAYING:
                 playMediaReady();
+                Utility.showNotification(getActivity(), trackModels, currentTrack);
                 break;
             case PAUSED:
             case STOPPED:
@@ -389,11 +395,13 @@ public class TrackPlayerFragment extends DialogFragment {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onDestroy() {
         if (trackServiceConnection != null && getActivity() != null) {
             getActivity().unbindService(trackServiceConnection);
         }
+
         super.onDestroy();
     }
 
@@ -411,9 +419,9 @@ public class TrackPlayerFragment extends DialogFragment {
         private TextView albumName;
         private TextView trackTitle;
         private ImageView trackImage;
-        private Button prevButton;
-        private Button playButton;
-        private Button nextButton;
+        private ImageButton prevButton;
+        private ImageButton playButton;
+        private ImageButton nextButton;
         private SeekBar seekBar;
         private TextView currentSec;
         private TextView duration;
@@ -425,9 +433,9 @@ public class TrackPlayerFragment extends DialogFragment {
             currentSec = (TextView) view.findViewById(R.id.player_seek_textview);
             duration = (TextView) view.findViewById(R.id.player_duration_textview);
             trackImage = (ImageView) view.findViewById(R.id.player_image);
-            prevButton = (Button) view.findViewById(R.id.player_prev_btn);
-            playButton = (Button) view.findViewById(R.id.player_play_btn);
-            nextButton = (Button) view.findViewById(R.id.player_next_btn);
+            prevButton = (ImageButton) view.findViewById(R.id.player_prev_btn);
+            playButton = (ImageButton) view.findViewById(R.id.player_play_btn);
+            nextButton = (ImageButton) view.findViewById(R.id.player_next_btn);
             seekBar = (SeekBar) view.findViewById(R.id.player_seekbar);
         }
     }

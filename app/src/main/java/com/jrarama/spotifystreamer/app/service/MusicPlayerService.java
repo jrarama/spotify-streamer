@@ -1,14 +1,18 @@
 package com.jrarama.spotifystreamer.app.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 
 import com.jrarama.spotifystreamer.app.Utility;
@@ -22,6 +26,15 @@ import java.util.ArrayList;
  */
 public class MusicPlayerService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnCompletionListener {
+
+    public static final String ACTION_PLAY = "action_play";
+    public static final String ACTION_PAUSE = "action_pause";
+    public static final String ACTION_NEXT = "action_next";
+    public static final String ACTION_PREVIOUS = "action_previous";
+
+    private MediaSessionManager sessionManager;
+    private MediaSessionCompat mediaSession;
+    private MediaControllerCompat mediaController;
 
     private static final String LOG_TAG = MusicPlayerService.class.getSimpleName();
     public static final String MESSAGE_TAG = Status.class.getName();

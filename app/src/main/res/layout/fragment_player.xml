@@ -76,19 +76,19 @@
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
-        <Button
+        <ImageButton
             android:id="@+id/player_prev_btn"
             style="@style/PlayerButton"
             android:background="@android:drawable/ic_media_previous"
             />
 
-        <Button
+        <ImageButton
             android:id="@+id/player_play_btn"
             style="@style/PlayerButton"
             android:background="@android:drawable/ic_media_play"
             />
 
-        <Button
+        <ImageButton
             android:id="@+id/player_next_btn"
             style="@style/PlayerButton"
             android:background="@android:drawable/ic_media_next"
