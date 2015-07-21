@@ -106,13 +106,13 @@ public class TrackPlayerFragment extends DialogFragment {
         status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
         currentTrack = musicPlayerService.getCurrentTrack();
         Log.d(LOG_TAG, "Broadcast received: " + status.name());
+
         switch (status) {
             case PREPARED:
                 onPrepared();
                 break;
             case PLAYING:
                 playMediaReady();
-                Utility.showNotification(getActivity(), trackModels, currentTrack);
                 break;
             case PAUSED:
             case STOPPED:

@@ -3,6 +3,8 @@ package com.jrarama.spotifystreamer.app.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.session.MediaSessionManager;
@@ -17,6 +19,8 @@ import android.util.Log;
 
 import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,10 +35,6 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String ACTION_PAUSE = "action_pause";
     public static final String ACTION_NEXT = "action_next";
     public static final String ACTION_PREVIOUS = "action_previous";
-
-    private MediaSessionManager sessionManager;
-    private MediaSessionCompat mediaSession;
-    private MediaControllerCompat mediaController;
 
     private static final String LOG_TAG = MusicPlayerService.class.getSimpleName();
     public static final String MESSAGE_TAG = Status.class.getName();
@@ -93,6 +93,27 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && intent.getAction() != null) {
+            switch (intent.getAction()) {
+                case ACTION_PAUSE:
+                    pauseTrack();
+                    break;
+                case ACTION_PLAY:
+                    playTrack();
+                    break;
+                case ACTION_NEXT:
+                    setTrack(currentTrack + 1);
+                    break;
+                case ACTION_PREVIOUS:
+                    setTrack(currentTrack - 1);
+                    break;
+            }
+        }
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
         return musicBind;
     }
@@ -113,7 +134,18 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         intent.putExtra(STATUS, status);
         intent.putExtra(CURRENT_TRACK, currentTrack);
         intent.putExtra(CURRENT_POSITION, mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0);
+
+        manageNotification(getApplicationContext());
         broadcastManager.sendBroadcast(intent);
+    }
+
+    private void manageNotification(Context context) {
+        switch (status) {
+            case PLAYING:
+            case PAUSED:
+            case CHANGETRACK:
+                Utility.showNotification(context, trackModels, currentTrack, status);
+        }
     }
 
     public void setArtistName(String artistName) {

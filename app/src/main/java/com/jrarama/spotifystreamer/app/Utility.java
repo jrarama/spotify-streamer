@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -15,6 +16,9 @@ import android.support.v7.app.NotificationCompat;
 
 import com.jrarama.spotifystreamer.app.activity.MainActivity;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
+import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -73,19 +77,30 @@ public class Utility {
                 Boolean.parseBoolean(context.getString(R.string.pref_notif_default)));
     }
 
-    public static void showNotification(Context context, List<TrackModel> trackModels, int currentTrack) {
+    public static void showNotification(Context context, List<TrackModel> trackModels, int currentTrack, MusicPlayerService.Status status) {
         TrackModel track = trackModels.get(currentTrack);
-        //Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(track.getImageUrl()));
+        boolean playing = status == MusicPlayerService.Status.PLAYING;
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setContentText(track.getAlbumName());
         builder.setContentTitle(track.getTitle());
-        builder.setSmallIcon(android.R.drawable.ic_media_play);
+        builder.setSmallIcon(playing ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
         builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+        builder.setOngoing(true);
 
-        builder.addAction(android.R.drawable.ic_media_previous, "Previous", null);
-        builder.addAction(android.R.drawable.ic_media_pause, "Pause", null);
-        builder.addAction(android.R.drawable.ic_media_next, "Next", null);
+
+        Intent prevIntent = new Intent(context, MusicPlayerService.class).setAction(MusicPlayerService.ACTION_PREVIOUS);
+        Intent nextIntent = new Intent(context, MusicPlayerService.class).setAction(MusicPlayerService.ACTION_NEXT);
+        Intent playIntent = new Intent(context, MusicPlayerService.class)
+            .setAction(playing ? MusicPlayerService.ACTION_PAUSE : MusicPlayerService.ACTION_PLAY);
+
+        builder.addAction(android.R.drawable.ic_media_previous, "Previous", PendingIntent.getService(context, 0, prevIntent, 0));
+        if (playing) {
+            builder.addAction(android.R.drawable.ic_media_pause, "Pause", PendingIntent.getService(context, 0, playIntent, 0));
+        } else {
+            builder.addAction(android.R.drawable.ic_media_play, "Play", PendingIntent.getService(context, 0, playIntent, 0));
+        }
+        builder.addAction(android.R.drawable.ic_media_next, "Next", PendingIntent.getService(context, 0, nextIntent, 0));
 
         NotificationCompat.MediaStyle mediaStyle = new NotificationCompat.MediaStyle();
         mediaStyle.setShowActionsInCompactView(1);
@@ -98,13 +113,31 @@ public class Utility {
 
         // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setContentIntent(resultPendingIntent);
 
-        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        final NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // notificationID allows you to update the notification later on.
-        mNotificationManager.notify(9999, builder.build());
+        Target target = new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
 
+                builder.setLargeIcon(bitmap);
+                // notificationID allows you to update the notification later on.
+                mNotificationManager.notify(9999, builder.build());
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+            }
+        };
+
+        Picasso.with(context).load(track.getImageUrl()).into(target);
     }
 }
