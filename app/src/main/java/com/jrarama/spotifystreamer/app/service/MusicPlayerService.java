@@ -65,6 +65,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onCreate() {
+        Log.d(LOG_TAG, "Calling onCreate");
         super.onCreate();
         broadcastManager = LocalBroadcastManager.getInstance(this);
         currentTrack = 0;
@@ -110,23 +111,32 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
                     break;
             }
         }
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(LOG_TAG, "onBind");
         return musicBind;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.d(LOG_TAG, "onUnbind");
+
+        return false;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(LOG_TAG, "onDestroy");
         mediaPlayer.stop();
         mediaPlayer.release();
         mediaPlayer = null;
 
         status = Status.IDLE;
         sendStatus();
-        return false;
+        super.onDestroy();
     }
 
     public void sendStatus() {

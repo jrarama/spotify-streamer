@@ -84,7 +84,7 @@ public class Utility {
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setContentText(track.getAlbumName());
         builder.setContentTitle(track.getTitle());
-        builder.setSmallIcon(playing ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
+        builder.setSmallIcon(!playing ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
         builder.setVisibility(Notification.VISIBILITY_PUBLIC);
         builder.setOngoing(true);
 
@@ -107,13 +107,14 @@ public class Utility {
 
         builder.setStyle(mediaStyle);
 
-        Intent resultIntent = new Intent(context, MainActivity.class);
+        Intent resultIntent = new Intent(context, MainActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(MainActivity.class);
-
-        // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(resultPendingIntent);
 
         final NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -121,15 +122,12 @@ public class Utility {
         Target target = new Target() {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-
-                builder.setLargeIcon(bitmap);
-                // notificationID allows you to update the notification later on.
-                mNotificationManager.notify(9999, builder.build());
+                showNotification(bitmap, builder, mNotificationManager);
             }
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
-
+                showNotification(null, builder, mNotificationManager);
             }
 
             @Override
@@ -139,5 +137,12 @@ public class Utility {
         };
 
         Picasso.with(context).load(track.getImageUrl()).into(target);
+    }
+
+    private static void showNotification(Bitmap bitmap, NotificationCompat.Builder builder, NotificationManager manager) {
+        if (bitmap != null) {
+            builder.setLargeIcon(bitmap);
+        }
+        manager.notify(9999, builder.build());
     }
 }

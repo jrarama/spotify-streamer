@@ -22,6 +22,7 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
 
     private BroadcastReceiver receiver;
     protected boolean musicBound = false;
+    private Intent playIntent;
 
     private ServiceConnection trackServiceConnection = new ServiceConnection() {
         @Override
@@ -46,14 +47,20 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
     abstract void getBroadcastStatus(Intent intent);
 
     private void bindService() {
-        Intent playIntent = new Intent(this, MusicPlayerService.class);
+        playIntent = new Intent(this, MusicPlayerService.class);
         bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
         startService(playIntent);
     }
 
+    private boolean isPlaying() {
+        return musicPlayerService != null &&
+                musicPlayerService.getStatus() == MusicPlayerService.Status.PLAYING;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onStart() {
+        super.onStart();
+
         bindService();
 
         receiver = new BroadcastReceiver() {
@@ -62,11 +69,6 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
                 getBroadcastStatus(intent);
             }
         };
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 receiver, new IntentFilter(MusicPlayerService.MESSAGE_TAG)
         );
@@ -75,13 +77,17 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+
+        if (trackServiceConnection != null) {
+            unbindService(trackServiceConnection);
+        }
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        if (trackServiceConnection != null) {
-            unbindService(trackServiceConnection);
+        if (playIntent != null && !isPlaying()) {
+            stopService(playIntent);
         }
         super.onDestroy();
     }

@@ -48,6 +48,8 @@ public class TrackPlayerFragment extends DialogFragment {
     private BroadcastReceiver receiver;
     private boolean musicBound = false;
 
+    private Intent playIntent;
+
     private ArrayList<TrackModel> trackModels;
 
     private int currentTrack = 0;
@@ -81,7 +83,7 @@ public class TrackPlayerFragment extends DialogFragment {
 
     private void bindService() {
         Activity activity = getActivity();
-        Intent playIntent = new Intent(activity, MusicPlayerService.class);
+        playIntent = new Intent(activity, MusicPlayerService.class);
         activity.bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
         activity.startService(playIntent);
     }
@@ -158,14 +160,6 @@ public class TrackPlayerFragment extends DialogFragment {
             artistName = args.getString(ARTIST_NAME);
             currentTrack = args.getInt(POSITION, 0);
         }
-
-        bindService();
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                getBroadcastStatus(intent);
-            }
-        };
 
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
         mHolder = new ViewHolder(rootView);
@@ -365,20 +359,6 @@ public class TrackPlayerFragment extends DialogFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
-                receiver, new IntentFilter(MusicPlayerService.MESSAGE_TAG)
-        );
-    }
-
-    @Override
-    public void onStop() {
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
-        super.onStop();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
@@ -395,16 +375,6 @@ public class TrackPlayerFragment extends DialogFragment {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    @Override
-    public void onDestroy() {
-        if (trackServiceConnection != null && getActivity() != null) {
-            getActivity().unbindService(trackServiceConnection);
-        }
-
-        super.onDestroy();
-    }
-
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
@@ -412,6 +382,46 @@ public class TrackPlayerFragment extends DialogFragment {
         if (activity instanceof DialogInterface.OnDismissListener) {
             ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
         }
+    }
+
+    private boolean isPlaying() {
+        return musicPlayerService != null &&
+                musicPlayerService.getStatus() == MusicPlayerService.Status.PLAYING;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        bindService();
+
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                getBroadcastStatus(intent);
+            }
+        };
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
+                receiver, new IntentFilter(MusicPlayerService.MESSAGE_TAG)
+        );
+    }
+
+    @Override
+    public void onStop() {
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
+
+        if (trackServiceConnection != null) {
+            getActivity().unbindService(trackServiceConnection);
+        }
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (playIntent != null && !isPlaying()) {
+            getActivity().stopService(playIntent);
+        }
+        super.onDestroy();
     }
 
     class ViewHolder {
