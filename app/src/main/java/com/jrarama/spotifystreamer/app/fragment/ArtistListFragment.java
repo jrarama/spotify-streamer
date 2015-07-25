@@ -68,6 +68,8 @@ public class ArtistListFragment extends MusicServiceFragment {
 
         artistsAdapter.setNotifyOnChange(false);
         artistsAdapter.notifyDataSetChanged();
+
+        populateFromIntent();
     }
 
     @Nullable
@@ -109,7 +111,7 @@ public class ArtistListFragment extends MusicServiceFragment {
 
     private void attachArtistSearchEvent(EditText editText) {
         editText.addTextChangedListener(new TextWatcher() {
-            private Timer timer=new Timer();
+            private Timer timer = new Timer();
             private final long TEXT_CHANGE_DELAY = 500; // in ms
 
             @Override
@@ -162,8 +164,7 @@ public class ArtistListFragment extends MusicServiceFragment {
         }
     }
 
-    @Override
-    void afterServiceConnected() {
+    private void populateFromIntent() {
         Intent intent = getActivity().getIntent();
         String action = intent != null ? intent.getAction() : null;
 
@@ -179,6 +180,11 @@ public class ArtistListFragment extends MusicServiceFragment {
         } else {
             fromNotification = false;
         }
+    }
+
+    @Override
+    void afterServiceConnected() {
+        populateFromIntent();
     }
 
     @Override

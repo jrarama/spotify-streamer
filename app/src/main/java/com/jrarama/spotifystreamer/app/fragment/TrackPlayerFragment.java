@@ -44,6 +44,7 @@ public class TrackPlayerFragment extends DialogFragment {
 
     private static final String LOG_TAG = TrackPlayerFragment.class.getSimpleName();
 
+
     private MusicPlayerService musicPlayerService;
     private BroadcastReceiver receiver;
     private boolean musicBound = false;
@@ -60,7 +61,9 @@ public class TrackPlayerFragment extends DialogFragment {
     public static final String POSITION = "position";
     public static final String ARTIST_NAME = "artist_name";
     public static final String TABLET = "tablet";
+    public static final String ARTIST_ID = "artist_id";
 
+    private String artistId;
     private ServiceConnection trackServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -86,11 +89,12 @@ public class TrackPlayerFragment extends DialogFragment {
         activity.startService(playIntent);
     }
 
-    public static TrackPlayerFragment newInstance(ArrayList<TrackModel> tracks, String artistName, int currentTrack, boolean tablet) {
+    public static TrackPlayerFragment newInstance(ArrayList<TrackModel> tracks, String artistId, String artistName, int currentTrack, boolean tablet) {
         TrackPlayerFragment fragment = new TrackPlayerFragment();
         Bundle args = new Bundle();
         args.putParcelableArrayList(TRACKS, tracks);
         args.putString(ARTIST_NAME, artistName);
+        args.putString(ARTIST_ID, artistId);
         args.putInt(POSITION, currentTrack);
         args.putBoolean(TABLET, tablet);
         fragment.setArguments(args);
@@ -157,6 +161,7 @@ public class TrackPlayerFragment extends DialogFragment {
             trackModels = args.getParcelableArrayList(TRACKS);
             artistName = args.getString(ARTIST_NAME);
             currentTrack = args.getInt(POSITION, 0);
+            artistId = args.getString(ARTIST_ID);
         }
 
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);

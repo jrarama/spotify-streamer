@@ -25,6 +25,7 @@ public class ArtistTracksFragment extends Fragment {
     public static final String ARTIST_ID = "artist_id";
     public static final String ARTIST_NAME = "artist_name";
     public static final String ARTIST_TRACKS = "artist_tracks";
+    public static final String CURRENT_TRACK = "current_track";
 
     private static final String LOG_TAG = Utility.getLogTag(ArtistTracksFragment.class);
 
@@ -36,9 +37,10 @@ public class ArtistTracksFragment extends Fragment {
     private ArrayList<TrackModel> mTracks;
     private String mArtistId;
     private String mArtistName;
+    private int mCurrentTrack = -1;
 
     public interface Callback {
-        void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks);
+        void onTrackSelected(int position, String artistId, String artistName, ArrayList<TrackModel> tracks);
     }
 
     @Override
@@ -47,6 +49,7 @@ public class ArtistTracksFragment extends Fragment {
         outState.putParcelableArrayList(ARTIST_TRACKS, mTracks);
         outState.putString(ARTIST_ID, mArtistId);
         outState.putString(ARTIST_NAME, mArtistName);
+        outState.putInt(CURRENT_TRACK, mCurrentTrack);
     }
 
     private boolean init(@Nullable Bundle savedInstanceState) {
@@ -55,6 +58,7 @@ public class ArtistTracksFragment extends Fragment {
             mArtistId = args.getString(ARTIST_ID);
             mArtistName = args.getString(ARTIST_NAME);
             mTracks = args.getParcelableArrayList(ARTIST_TRACKS);
+            mCurrentTrack = args.getInt(CURRENT_TRACK, -1);
         } else {
             return false;
         }
@@ -63,6 +67,7 @@ public class ArtistTracksFragment extends Fragment {
             mTracks = savedInstanceState.getParcelableArrayList(ARTIST_TRACKS);
             mArtistId = savedInstanceState.getString(ARTIST_ID);
             mArtistName = savedInstanceState.getString(ARTIST_NAME);
+            mCurrentTrack = savedInstanceState.getInt(CURRENT_TRACK, -1);
         } else if (mTracks == null) {
             fetchTracks();
         }
@@ -102,9 +107,14 @@ public class ArtistTracksFragment extends Fragment {
                     Log.e(LOG_TAG, "Parent activity does not implement " + Callback.class.getName());
                     return;
                 }
-                callback.onTrackSelected(position, mArtistName, mTracks);
+                callback.onTrackSelected(position, mArtistId, mArtistName, mTracks);
             }
         });
+
+        if (mCurrentTrack > -1 && mCurrentTrack < mTracks.size()) {
+            setSelectedTrack(mCurrentTrack);
+        }
+
         return rootView;
     }
 

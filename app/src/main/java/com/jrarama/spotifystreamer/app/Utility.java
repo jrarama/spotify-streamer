@@ -126,8 +126,7 @@ public class Utility {
         stackBuilder.addParentStack(clazz);
         stackBuilder.addNextIntent(resultIntent);
 
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(resultPendingIntent);
 
         final NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -45,6 +45,8 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     private static final String CURRENT_TRACK = "track";
     private static final String CURRENT_POSITION = "position";
     private String artistName;
+    private String artistId;
+
     private String queryString;
     private ArrayList<ArtistModel> artistModels;
     private boolean twoPane;
@@ -190,6 +192,14 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public String getArtistName() {
         return artistName;
+    }
+
+    public String getArtistId() {
+        return artistId;
+    }
+
+    public void setArtistId(String artistId) {
+        this.artistId = artistId;
     }
 
     public Status getStatus() {

@@ -25,6 +25,8 @@ public class TrackPlayerActivity extends MusicServiceActivity {
     private ShareActionProvider mShareActionProvider;
     private MenuItem mShareMenu;
 
+    private boolean fromNotification = false;
+
     @Override
     void afterServiceConnected() {
 
@@ -73,18 +75,48 @@ public class TrackPlayerActivity extends MusicServiceActivity {
         boolean hasSavedInstance = savedInstanceState != null;
         Log.d(LOG_TAG, "Saved Instance: " + hasSavedInstance);
 
-        if (savedInstanceState == null) {
-            Intent intent = getIntent();
+        Intent intent = getIntent();
+        fromNotification = MainActivity.ACTION_FROM_NOTIFICATION.equals(intent.getAction());
 
+        if (savedInstanceState == null) {
             int position = intent.getIntExtra(TrackPlayerFragment.POSITION, 0);
             String name = intent.getStringExtra(TrackPlayerFragment.ARTIST_NAME);
             ArrayList<TrackModel> tracks = intent.getParcelableArrayListExtra(TrackPlayerFragment.TRACKS);
+            String id = intent.getStringExtra(TrackPlayerFragment.ARTIST_ID);
 
-            TrackPlayerFragment fragment = TrackPlayerFragment.newInstance(tracks, name, position, false);
+            TrackPlayerFragment fragment = TrackPlayerFragment.newInstance(tracks, id, name, position, false);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.track_player_container, fragment)
                     .commit();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(LOG_TAG, "Back button is pressed");
+        if (upFromNotification()) {
+            return;
+        }
+
+        super.onBackPressed();
+    }
+
+    private boolean upFromNotification() {
+        if (musicPlayerService == null || !fromNotification) return false;
+
+        String artistName = musicPlayerService.getArtistName();
+        String artistId = musicPlayerService.getArtistId();
+
+        Intent intent = new Intent(this, ArtistTracksActivity.class)
+                .setAction(MainActivity.ACTION_FROM_NOTIFICATION)
+                .putExtra(Intent.EXTRA_TITLE, artistName)
+                .putExtra(Intent.EXTRA_UID, artistId);
+
+        Log.d(LOG_TAG, "Starting new " + ArtistTracksActivity.class.getSimpleName() +
+                " with Artist Name: " + artistName + ", ArtistId: " + artistId) ;
+        startActivity(intent);
+
+        return true;
     }
 
     @Override
@@ -105,6 +137,14 @@ public class TrackPlayerActivity extends MusicServiceActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        int up = android.R.id.home;
+        if (id == up) {
+            Log.d(LOG_TAG, "Home button is pressed");
+            if (upFromNotification()) {
+                return true;
+            }
+        }
+
         if (id == R.id.action_settings) {
             return true;
         }

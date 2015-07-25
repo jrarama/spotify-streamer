@@ -61,8 +61,10 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
             fromNotification = true;
             TrackModel track = musicPlayerService.getCurrentTrackModel();
             if (track != null && twoPane) {
-                showTracksFragment(track.getId(), musicPlayerService.getArtistName(), musicPlayerService.getTrackModels());
-                onTrackSelected(musicPlayerService.getCurrentTrack(), musicPlayerService.getArtistName(), musicPlayerService.getTrackModels());
+                showTracksFragment(track.getId(), musicPlayerService.getArtistName(), musicPlayerService.getTrackModels(),
+                        musicPlayerService.getCurrentTrack());
+                onTrackSelected(musicPlayerService.getCurrentTrack(), musicPlayerService.getArtistId(),
+                        musicPlayerService.getArtistName(), musicPlayerService.getTrackModels());
             }
         } else {
             fromNotification = false;
@@ -149,11 +151,12 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         return super.onOptionsItemSelected(item);
     }
 
-    private void showTracksFragment(String id, String name, ArrayList<TrackModel> trackModels) {
+    private void showTracksFragment(String id, String name, ArrayList<TrackModel> trackModels, int currentTrack) {
         Bundle args = new Bundle();
         args.putString(ArtistTracksFragment.ARTIST_ID, id);
         args.putString(ArtistTracksFragment.ARTIST_NAME, name);
         args.putParcelableArrayList(ArtistTracksFragment.ARTIST_TRACKS, trackModels);
+        args.putInt(ArtistTracksFragment.CURRENT_TRACK, currentTrack);
 
         ArtistTracksFragment fragment = new ArtistTracksFragment();
         fragment.setArguments(args);
@@ -165,13 +168,18 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
 
     @Override
     public void onArtistSelected(String id, String name) {
+        if (musicBound && musicPlayerService != null) {
+            musicPlayerService.setArtistId(id);
+            musicPlayerService.setArtistName(name);
+        }
+
         if (!twoPane) {
             Intent intent = new Intent(this, ArtistTracksActivity.class)
                     .putExtra(Intent.EXTRA_TITLE, name)
                     .putExtra(Intent.EXTRA_UID, id);
             startActivity(intent);
         } else {
-            showTracksFragment(id, name, null);
+            showTracksFragment(id, name, null, -1);
         }
     }
 
@@ -183,8 +191,9 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         }
     }
 
+
     @Override
-    public void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks) {
+    public void onTrackSelected(int position, String artistId, String artistName, ArrayList<TrackModel> tracks) {
         if (dialogShown) {
             return;
         }
@@ -197,7 +206,7 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         }
         ft.addToBackStack(null);
 
-        TrackPlayerFragment dialog = TrackPlayerFragment.newInstance(tracks, artistName, position, true);
+        TrackPlayerFragment dialog = TrackPlayerFragment.newInstance(tracks, artistId, artistName, position, true);
         dialog.show(fm, PLAYER_TAG);
 
         ft.commit();
@@ -215,4 +224,5 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
     public void onDismiss(DialogInterface dialog) {
         dialogShown = false;
     }
+
 }
