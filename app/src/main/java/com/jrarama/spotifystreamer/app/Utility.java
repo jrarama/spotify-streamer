@@ -32,6 +32,7 @@ import kaaes.spotify.webapi.android.models.Image;
 public class Utility {
 
     private static final String LOG_PREFIX = "JprSpotify.";
+    public static final String NOTIFICATION_TAG = "notification";
 
     public static String getLogTag(Class<?> cls) {
         return LOG_PREFIX + cls.getSimpleName();
@@ -88,7 +89,6 @@ public class Utility {
         builder.setVisibility(Notification.VISIBILITY_PUBLIC);
         builder.setOngoing(true);
 
-
         Intent prevIntent = new Intent(context, MusicPlayerService.class).setAction(MusicPlayerService.ACTION_PREVIOUS);
         Intent nextIntent = new Intent(context, MusicPlayerService.class).setAction(MusicPlayerService.ACTION_NEXT);
         Intent playIntent = new Intent(context, MusicPlayerService.class)
@@ -108,13 +108,15 @@ public class Utility {
         builder.setStyle(mediaStyle);
 
         Intent resultIntent = new Intent(context, MainActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .setAction(MainActivity.ACTION_FROM_NOTIFICATION);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(MainActivity.class);
         stackBuilder.addNextIntent(resultIntent);
 
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(resultPendingIntent);
 
         final NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -143,6 +145,11 @@ public class Utility {
         if (bitmap != null) {
             builder.setLargeIcon(bitmap);
         }
-        manager.notify(9999, builder.build());
+        manager.notify(NOTIFICATION_TAG, 0, builder.build());
+    }
+
+    public static void cancelNotification(Context context) {
+        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(NOTIFICATION_TAG, 0);
     }
 }

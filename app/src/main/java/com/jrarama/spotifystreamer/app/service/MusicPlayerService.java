@@ -18,6 +18,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 
 import com.jrarama.spotifystreamer.app.Utility;
+import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -44,6 +45,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     private static final String CURRENT_TRACK = "track";
     private static final String CURRENT_POSITION = "position";
     private String artistName;
+    private String queryString;
+    private ArrayList<ArtistModel> artistModels;
+    private boolean twoPane;
 
     public static final String STATUS = "status";
 
@@ -91,6 +95,26 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public void setTracks(ArrayList<TrackModel> tracks) {
         trackModels = tracks;
+    }
+
+    public ArrayList<TrackModel> getTrackModels() {
+        return trackModels;
+    }
+
+    public ArrayList<ArtistModel> getArtistModels() {
+        return artistModels;
+    }
+
+    public void setArtistModels(ArrayList<ArtistModel> artistModels) {
+        this.artistModels = artistModels;
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
     }
 
     @Override
@@ -170,6 +194,16 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         return status;
     }
 
+    public boolean isTwoPane() {
+        return twoPane;
+    }
+
+    public void setTwoPane(boolean twoPane) {
+        this.twoPane = twoPane;
+    }
+
+
+
     public void setTrack(int index) {
         if (index == currentTrack && (status == Status.PLAYING || status == Status.PAUSED)) {
             Log.d(LOG_TAG, "Same track is set");
@@ -194,7 +228,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     public TrackModel getCurrentTrackModel() {
-        return trackModels.get(currentTrack);
+        return trackModels != null ? trackModels.get(currentTrack) : null;
     }
 
     public int getDuration() {

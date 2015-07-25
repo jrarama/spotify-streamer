@@ -1,5 +1,7 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 
 import com.jrarama.spotifystreamer.app.R;
 import com.jrarama.spotifystreamer.app.Utility;
+import com.jrarama.spotifystreamer.app.activity.MainActivity;
 import com.jrarama.spotifystreamer.app.adapter.ArtistAdapter;
 import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.jrarama.spotifystreamer.app.task.ArtistFetcherTask;
@@ -24,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ArtistListFragment extends Fragment {
+public class ArtistListFragment extends MusicServiceFragment {
 
     private static final String LOG_TAG = Utility.getLogTag(ArtistListFragment.class);
 
@@ -33,6 +36,8 @@ public class ArtistListFragment extends Fragment {
     private ArtistAdapter artistsAdapter;
     private ArrayList<ArtistModel> mArtistModels = null;
     private String mSearchArtist = null;
+    private EditText searchBox;
+    private boolean fromNotification = false;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -45,6 +50,7 @@ public class ArtistListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setRetainInstance(true);
 
         if (savedInstanceState != null) {
@@ -69,12 +75,12 @@ public class ArtistListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_artist_list, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.artist_list);
-        EditText editText = (EditText) rootView.findViewById(R.id.artist_search_text);
+        searchBox = (EditText) rootView.findViewById(R.id.artist_search_text);
 
-        editText.setText(mSearchArtist);
+        searchBox.setText(mSearchArtist);
 
         listView.setAdapter(artistsAdapter);
-        attachArtistSearchEvent(editText);
+        attachArtistSearchEvent(searchBox);
         attachOnItemClickEvent(listView);
         return rootView;
     }
@@ -116,6 +122,7 @@ public class ArtistListFragment extends Fragment {
 
             @Override
             public void afterTextChanged(final Editable s) {
+                if (fromNotification && mArtistModels != null) return;
                 mSearchArtist = s.toString();
                 timer.cancel();
 
@@ -146,6 +153,42 @@ public class ArtistListFragment extends Fragment {
         }
 
         artistsAdapter.notifyDataSetChanged();
+
+        Callback callback = (Callback) getActivity();
+        if (callback != null) {
+            callback.onArtistSearched(mSearchArtist, mArtistModels);
+        } else {
+            Log.e(LOG_TAG, "Parent activity does not implement " + Callback.class.getName());
+        }
+    }
+
+    @Override
+    void afterServiceConnected() {
+        Intent intent = getActivity().getIntent();
+        String action = intent != null ? intent.getAction() : null;
+
+        if (MainActivity.ACTION_FROM_NOTIFICATION.equals(action) && musicPlayerService != null) {
+            mSearchArtist = musicPlayerService.getQueryString();
+            fromNotification = true;
+
+            if (searchBox != null) {
+                searchBox.setText(mSearchArtist);
+            }
+            mArtistModels = musicPlayerService.getArtistModels();
+            populateArtists();
+        } else {
+            fromNotification = false;
+        }
+    }
+
+    @Override
+    void afterServiceDisconnected() {
+
+    }
+
+    @Override
+    void getBroadcastStatus(Intent intent) {
+
     }
 
     class ArtistFetcher extends ArtistFetcherTask {
@@ -165,5 +208,7 @@ public class ArtistListFragment extends Fragment {
 
     public interface Callback {
         void onArtistSelected(String id, String name);
+
+        void onArtistSearched (String queryString, ArrayList<ArtistModel> artistModels);
     }
 }

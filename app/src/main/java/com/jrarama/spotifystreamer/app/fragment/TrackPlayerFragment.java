@@ -104,7 +104,7 @@ public class TrackPlayerFragment extends DialogFragment {
     }
 
     private void getBroadcastStatus(Intent intent) {
-        if (intent == null) return;
+        if (intent == null && musicBound) return;
         status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
         currentTrack = musicPlayerService.getCurrentTrack();
         Log.d(LOG_TAG, "Broadcast received: " + status.name());

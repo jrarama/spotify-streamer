@@ -25,6 +25,7 @@ import java.util.ArrayList;
 public class ArtistTracksFragment extends Fragment {
     public static final String ARTIST_ID = "artist_id";
     public static final String ARTIST_NAME = "artist_name";
+    public static final String ARTIST_TRACKS = "artist_tracks";
 
     private static final String LOG_TAG = Utility.getLogTag(ArtistTracksFragment.class);
     private ArtistTrackAdapter artistTrackAdapter;
@@ -51,13 +52,14 @@ public class ArtistTracksFragment extends Fragment {
         if (args != null) {
             mArtistId = args.getString(ARTIST_ID);
             mArtistName = args.getString(ARTIST_NAME);
+            mTracks = args.getParcelableArrayList(ARTIST_TRACKS);
         } else {
             return false;
         }
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null && mTracks == null) {
             mTracks = savedInstanceState.getParcelableArrayList(TRACKS_KEY);
-        } else {
+        } else if (mTracks == null) {
             fetchTracks();
         }
 
@@ -68,6 +70,7 @@ public class ArtistTracksFragment extends Fragment {
         );
 
         artistTrackAdapter.setNotifyOnChange(false);
+
         return true;
     }
 

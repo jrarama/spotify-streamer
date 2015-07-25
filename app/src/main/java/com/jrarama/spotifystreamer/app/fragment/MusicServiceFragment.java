@@ -1,23 +1,23 @@
-package com.jrarama.spotifystreamer.app.activity;
+package com.jrarama.spotifystreamer.app.fragment;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 
-import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 
 /**
  * Created by joshua on 7/18/15.
  */
-public abstract class MusicServiceActivity extends AppCompatActivity {
+public abstract class MusicServiceFragment extends Fragment {
 
     protected MusicPlayerService musicPlayerService;
 
@@ -30,13 +30,8 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicPlayerService.MusicBinder binder = (MusicPlayerService.MusicBinder) service;
             musicPlayerService = binder.getService();
-
-            if (musicPlayerService != null) {
-                musicBound = true;
-                afterServiceConnected();
-            } else {
-                bindService();
-            }
+            musicBound = true;
+            afterServiceConnected();
         }
 
         @Override
@@ -53,9 +48,10 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
     abstract void getBroadcastStatus(Intent intent);
 
     private void bindService() {
-        playIntent = new Intent(this, MusicPlayerService.class);
-        bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
-        startService(playIntent);
+        Activity activity = getActivity();
+        playIntent = new Intent(activity, MusicPlayerService.class);
+        activity.bindService(playIntent, trackServiceConnection, Context.BIND_AUTO_CREATE);
+        activity.startService(playIntent);
     }
 
     private boolean isPlaying() {
@@ -75,26 +71,25 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
                 getBroadcastStatus(intent);
             }
         };
-        LocalBroadcastManager.getInstance(this).registerReceiver(
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
                 receiver, new IntentFilter(MusicPlayerService.MESSAGE_TAG)
         );
     }
 
     @Override
     public void onStop() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
 
         if (trackServiceConnection != null) {
-            unbindService(trackServiceConnection);
+            getActivity().unbindService(trackServiceConnection);
         }
         super.onStop();
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         if (playIntent != null && !isPlaying()) {
-            stopService(playIntent);
-            Utility.cancelNotification(this);
+            getActivity().stopService(playIntent);
         }
         super.onDestroy();
     }
