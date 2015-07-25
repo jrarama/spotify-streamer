@@ -1,10 +1,5 @@
 package com.jrarama.spotifystreamer.app.activity;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -65,7 +60,7 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         if (ACTION_FROM_NOTIFICATION.equals(action) && musicPlayerService != null) {
             fromNotification = true;
             TrackModel track = musicPlayerService.getCurrentTrackModel();
-            if (track != null) {
+            if (track != null && twoPane) {
                 showTracksFragment(track.getId(), musicPlayerService.getArtistName(), musicPlayerService.getTrackModels());
                 onTrackSelected(musicPlayerService.getCurrentTrack(), musicPlayerService.getArtistName(), musicPlayerService.getTrackModels());
             }

@@ -47,11 +47,9 @@ public class TrackPlayerFragment extends DialogFragment {
     private MusicPlayerService musicPlayerService;
     private BroadcastReceiver receiver;
     private boolean musicBound = false;
-
     private Intent playIntent;
 
     private ArrayList<TrackModel> trackModels;
-
     private int currentTrack = 0;
     private String artistName;
     private ViewHolder mHolder;

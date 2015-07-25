@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,14 +27,15 @@ public class ArtistTracksFragment extends Fragment {
     public static final String ARTIST_TRACKS = "artist_tracks";
 
     private static final String LOG_TAG = Utility.getLogTag(ArtistTracksFragment.class);
+
     private ArtistTrackAdapter artistTrackAdapter;
-    private ArrayList<TrackModel> mTracks;
-    private static final String TRACKS_KEY = "tracks";
-    private String mArtistId;
-    private String mArtistName;
     private ListView tracksList;
     private TextView tracksText;
 
+
+    private ArrayList<TrackModel> mTracks;
+    private String mArtistId;
+    private String mArtistName;
 
     public interface Callback {
         void onTrackSelected(int position, String artistName, ArrayList<TrackModel> tracks);
@@ -44,7 +44,9 @@ public class ArtistTracksFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(TRACKS_KEY, mTracks);
+        outState.putParcelableArrayList(ARTIST_TRACKS, mTracks);
+        outState.putString(ARTIST_ID, mArtistId);
+        outState.putString(ARTIST_NAME, mArtistName);
     }
 
     private boolean init(@Nullable Bundle savedInstanceState) {
@@ -58,7 +60,9 @@ public class ArtistTracksFragment extends Fragment {
         }
 
         if (savedInstanceState != null && mTracks == null) {
-            mTracks = savedInstanceState.getParcelableArrayList(TRACKS_KEY);
+            mTracks = savedInstanceState.getParcelableArrayList(ARTIST_TRACKS);
+            mArtistId = savedInstanceState.getString(ARTIST_ID);
+            mArtistName = savedInstanceState.getString(ARTIST_NAME);
         } else if (mTracks == null) {
             fetchTracks();
         }

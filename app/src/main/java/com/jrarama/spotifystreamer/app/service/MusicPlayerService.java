@@ -65,6 +65,8 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     private Status status;
     private ArrayList<TrackModel> trackModels;
     private int currentTrack;
+    private String currentTrackId;
+
     private final IBinder musicBind = new MusicBinder();
 
     @Override
@@ -178,7 +180,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
             case PLAYING:
             case PAUSED:
             case CHANGETRACK:
-                Utility.showNotification(context, trackModels, currentTrack, status);
+                Utility.showNotification(context, this);
         }
     }
 
@@ -202,14 +204,19 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         this.twoPane = twoPane;
     }
 
+    private boolean sameTrack(int index) {
+        int clamped = Utility.clamp(index, 0, trackModels.size() - 1);
 
+        return currentTrackId != null && currentTrackId.equals(trackModels.get(clamped).getId());
+    }
 
     public void setTrack(int index) {
-        if (index == currentTrack && (status == Status.PLAYING || status == Status.PAUSED)) {
+        if (sameTrack(index) && (status == Status.PLAYING || status == Status.PAUSED)) {
             Log.d(LOG_TAG, "Same track is set");
             sendStatus();
         } else {
             currentTrack = Utility.clamp(index, 0, trackModels.size() - 1);
+            currentTrackId = trackModels.get(currentTrack).getId();
             status = Status.CHANGETRACK;
             if (status == Status.PLAYING) {
                 mediaPlayer.pause();

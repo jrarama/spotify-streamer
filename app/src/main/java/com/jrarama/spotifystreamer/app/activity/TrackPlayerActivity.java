@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 public class TrackPlayerActivity extends MusicServiceActivity {
 
+    private static final String LOG_TAG = TrackPlayerActivity.class.getName();
     private ShareActionProvider mShareActionProvider;
     private MenuItem mShareMenu;
 
@@ -68,6 +69,9 @@ public class TrackPlayerActivity extends MusicServiceActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setLogo(R.mipmap.ic_launcher);
+
+        boolean hasSavedInstance = savedInstanceState != null;
+        Log.d(LOG_TAG, "Saved Instance: " + hasSavedInstance);
 
         if (savedInstanceState == null) {
             Intent intent = getIntent();

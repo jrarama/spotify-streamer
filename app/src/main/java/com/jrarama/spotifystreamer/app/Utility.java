@@ -15,6 +15,8 @@ import android.provider.MediaStore;
 import android.support.v7.app.NotificationCompat;
 
 import com.jrarama.spotifystreamer.app.activity.MainActivity;
+import com.jrarama.spotifystreamer.app.activity.TrackPlayerActivity;
+import com.jrarama.spotifystreamer.app.fragment.TrackPlayerFragment;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 import com.squareup.picasso.Picasso;
@@ -78,9 +80,9 @@ public class Utility {
                 Boolean.parseBoolean(context.getString(R.string.pref_notif_default)));
     }
 
-    public static void showNotification(Context context, List<TrackModel> trackModels, int currentTrack, MusicPlayerService.Status status) {
-        TrackModel track = trackModels.get(currentTrack);
-        boolean playing = status == MusicPlayerService.Status.PLAYING;
+    public static void showNotification(Context context, MusicPlayerService service) {
+        TrackModel track = service.getCurrentTrackModel();
+        boolean playing = service.getStatus() == MusicPlayerService.Status.PLAYING;
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setContentText(track.getAlbumName());
@@ -107,12 +109,21 @@ public class Utility {
 
         builder.setStyle(mediaStyle);
 
-        Intent resultIntent = new Intent(context, MainActivity.class)
+        boolean twoPane = service.isTwoPane();
+        Class<?> clazz = twoPane ? MainActivity.class : TrackPlayerActivity.class;
+
+        Intent resultIntent = new Intent(context, clazz)
                 .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .setAction(MainActivity.ACTION_FROM_NOTIFICATION);
 
+        if (!twoPane) {
+            resultIntent.putExtra(TrackPlayerFragment.POSITION, service.getCurrentTrack());
+            resultIntent.putExtra(TrackPlayerFragment.ARTIST_NAME, service.getArtistName());
+            resultIntent.putExtra(TrackPlayerFragment.TRACKS, service.getTrackModels());
+        }
+
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addParentStack(clazz);
         stackBuilder.addNextIntent(resultIntent);
 
         PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent,
