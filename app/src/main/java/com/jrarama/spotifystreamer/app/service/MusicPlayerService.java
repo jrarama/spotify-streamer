@@ -220,6 +220,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         } else {
             currentTrack = Utility.clamp(index, 0, trackModels.size() - 1);
             currentTrackId = trackModels.get(currentTrack).getId();
+
             status = Status.CHANGETRACK;
             if (status == Status.PLAYING) {
                 mediaPlayer.pause();

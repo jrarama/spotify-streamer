@@ -240,7 +240,7 @@ public class TrackPlayerFragment extends DialogFragment {
         mHolder.artistName.setText(artistName);
         mHolder.trackTitle.setText(track.getTitle());
         if (track.getImageUrl() != null) {
-            Picasso.with(activity).load(track.getImageUrl()).fit().into(mHolder.trackImage);
+            Picasso.with(activity).load(track.getImageUrlBig()).fit().into(mHolder.trackImage);
         }
     }
 

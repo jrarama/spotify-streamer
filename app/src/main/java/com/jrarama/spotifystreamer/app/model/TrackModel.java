@@ -12,13 +12,15 @@ public class TrackModel implements Parcelable {
     private String title;
     private String albumName;
     private String imageUrl;
+    private String imageUrlBig;
     private String trackUrl;
 
-    public TrackModel(String id, String title, String albumName, String imageUrl, String trackUrl) {
+    public TrackModel(String id, String title, String albumName, String imageUrl, String imageUrlBig, String trackUrl) {
         setId(id);
         setTitle(title);
         setAlbumName(albumName);
         setImageUrl(imageUrl);
+        setImageUrlBig(imageUrlBig);
         setTrackUrl(trackUrl);
     }
 
@@ -54,6 +56,14 @@ public class TrackModel implements Parcelable {
         this.imageUrl = imageUrl;
     }
 
+    public String getImageUrlBig() {
+        return imageUrlBig;
+    }
+
+    public void setImageUrlBig(String imageUrlBig) {
+        this.imageUrlBig = imageUrlBig;
+    }
+
     public String getTrackUrl() {
         return trackUrl;
     }
@@ -73,6 +83,7 @@ public class TrackModel implements Parcelable {
         dest.writeString(this.title);
         dest.writeString(this.albumName);
         dest.writeString(this.imageUrl);
+        dest.writeString(this.imageUrlBig);
         dest.writeString(this.trackUrl);
     }
 
@@ -81,6 +92,7 @@ public class TrackModel implements Parcelable {
         this.title = parcel.readString();
         this.albumName = parcel.readString();
         this.imageUrl = parcel.readString();
+        this.imageUrlBig = parcel.readString();
         this.trackUrl = parcel.readString();
     }
 

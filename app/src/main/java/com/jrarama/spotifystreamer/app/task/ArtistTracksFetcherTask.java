@@ -48,10 +48,12 @@ public class ArtistTracksFetcherTask extends AsyncTask<String, Void, ArrayList<T
                 for (Track track: tracks.tracks) {
                     String albumName = null;
                     String imageUrl = null;
+                    String imageUrlBig = null;
 
                     if (track.album != null) {
                         albumName = track.album.name;
                         imageUrl = Utility.getImageUrlBySize(track.album.images, 64);
+                        imageUrlBig = Utility.getImageUrlBySize(track.album.images, 300);
                     }
 
                     Log.d(LOG_TAG, "Track id: " + track.id + ", Track name: " + track.name +
@@ -59,7 +61,7 @@ public class ArtistTracksFetcherTask extends AsyncTask<String, Void, ArrayList<T
                             ", Preview Url: " + track.preview_url);
 
 
-                    TrackModel model = new TrackModel(track.id, track.name, albumName, imageUrl, track.preview_url);
+                    TrackModel model = new TrackModel(track.id, track.name, albumName, imageUrl, imageUrlBig, track.preview_url);
                     trackModels.add(model);
                 }
 

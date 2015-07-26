@@ -96,15 +96,14 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
 
     private void setShareOptions() {
         boolean visible = mShareActionProvider != null && musicPlayerService != null;
-        if (mShareMenu != null) {
+        Intent intent =  Utility.createShareIntent(
+                musicPlayerService.getArtistName(),
+                musicPlayerService.getCurrentTrackModel()
+        );
+        
+        if (intent != null && mShareMenu != null) {
             mShareMenu.setVisible(visible);
-        }
-
-        if (visible) {
-            mShareActionProvider.setShareIntent(Utility.createShareIntent(
-                    musicPlayerService.getArtistName(),
-                    musicPlayerService.getCurrentTrackModel()
-            ));
+            mShareActionProvider.setShareIntent(intent);
         }
     }
 

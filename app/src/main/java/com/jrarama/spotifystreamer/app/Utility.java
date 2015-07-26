@@ -60,6 +60,7 @@ public class Utility {
     }
 
     public static Intent createShareIntent(String artistName, TrackModel track) {
+        if (track == null || artistName == null) return null;
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareIntent.setType("text/plain");
@@ -143,7 +144,7 @@ public class Utility {
             }
         };
 
-        Picasso.with(context).load(track.getImageUrl()).into(target);
+        Picasso.with(context).load(track.getImageUrlBig()).into(target);
     }
 
     private static void showNotification(Bitmap bitmap, NotificationCompat.Builder builder, NotificationManager manager) {
