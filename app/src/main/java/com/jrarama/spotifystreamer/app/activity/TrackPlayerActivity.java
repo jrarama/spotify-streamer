@@ -14,6 +14,7 @@ import com.jrarama.spotifystreamer.app.R;
 import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment;
 import com.jrarama.spotifystreamer.app.fragment.TrackPlayerFragment;
+import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
 import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 
@@ -25,11 +26,15 @@ public class TrackPlayerActivity extends MusicServiceActivity {
     private ShareActionProvider mShareActionProvider;
     private MenuItem mShareMenu;
 
+    private String artistName;
+    private TrackModel trackModel;
+
+
     private boolean fromNotification = false;
 
     @Override
     void afterServiceConnected() {
-
+        setData();
     }
 
     @Override
@@ -37,10 +42,19 @@ public class TrackPlayerActivity extends MusicServiceActivity {
 
     }
 
+    private void setData() {
+        if (musicPlayerService != null) {
+            artistName = musicPlayerService.getArtistName();
+            trackModel = musicPlayerService.getCurrentTrackModel();
+        }
+    }
+
     @Override
     void getBroadcastStatus(Intent intent) {
         if (intent == null) return;
         MusicPlayerService.Status status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
+
+        setData();
         switch (status) {
             case PREPARED:
             case CHANGETRACK:
@@ -50,17 +64,11 @@ public class TrackPlayerActivity extends MusicServiceActivity {
     }
 
     private void setShareOptions() {
-        boolean visible = mShareActionProvider != null && musicPlayerService != null;
-        if (mShareMenu != null) {
-            mShareMenu.setVisible(visible);
-        }
+        if (artistName == null || trackModel == null || mShareActionProvider == null) return;
 
-        if (visible) {
-            mShareActionProvider.setShareIntent(Utility.createShareIntent(
-                    musicPlayerService.getArtistName(),
-                    musicPlayerService.getCurrentTrackModel()
-            ));
-        }
+        mShareActionProvider.setShareIntent(Utility.createShareIntent(
+                artistName, trackModel
+        ));
     }
 
     @Override
@@ -80,11 +88,12 @@ public class TrackPlayerActivity extends MusicServiceActivity {
 
         if (savedInstanceState == null) {
             int position = intent.getIntExtra(TrackPlayerFragment.POSITION, 0);
-            String name = intent.getStringExtra(TrackPlayerFragment.ARTIST_NAME);
+            artistName = intent.getStringExtra(TrackPlayerFragment.ARTIST_NAME);
             ArrayList<TrackModel> tracks = intent.getParcelableArrayListExtra(TrackPlayerFragment.TRACKS);
             String id = intent.getStringExtra(TrackPlayerFragment.ARTIST_ID);
+            trackModel = tracks.get(position);
 
-            TrackPlayerFragment fragment = TrackPlayerFragment.newInstance(tracks, id, name, position, false);
+            TrackPlayerFragment fragment = TrackPlayerFragment.newInstance(tracks, id, artistName, position, false);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.track_player_container, fragment)
                     .commit();
@@ -126,6 +135,8 @@ public class TrackPlayerActivity extends MusicServiceActivity {
         mShareMenu = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareMenu);
 
+        setShareOptions();
+
         return true;
     }
 
@@ -150,5 +161,14 @@ public class TrackPlayerActivity extends MusicServiceActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d(LOG_TAG, "Resumed");
+        setData();
+        setShareOptions();
     }
 }
