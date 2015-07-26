@@ -153,16 +153,31 @@ public class TrackPlayerFragment extends DialogFragment {
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(TRACKS, trackModels);
+        outState.putString(ARTIST_NAME, artistName);
+        outState.putInt(POSITION, currentTrack);
+        outState.putString(ARTIST_ID, artistId);
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Bundle args = getArguments();
-        if (args != null) {
-            trackModels = args.getParcelableArrayList(TRACKS);
-            artistName = args.getString(ARTIST_NAME);
-            currentTrack = args.getInt(POSITION, 0);
-            artistId = args.getString(ARTIST_ID);
+        if (savedInstanceState == null) {
+            Bundle args = getArguments();
+            if (args != null) {
+                trackModels = args.getParcelableArrayList(TRACKS);
+                artistName = args.getString(ARTIST_NAME);
+                currentTrack = args.getInt(POSITION, 0);
+                artistId = args.getString(ARTIST_ID);
+            }
+        } else {
+            trackModels = savedInstanceState.getParcelableArrayList(TRACKS);
+            artistName = savedInstanceState.getString(ARTIST_NAME);
+            currentTrack = savedInstanceState.getInt(POSITION, 0);
+            artistId = savedInstanceState.getString(ARTIST_ID);
         }
 
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
