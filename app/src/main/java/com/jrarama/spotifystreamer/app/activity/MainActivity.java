@@ -39,6 +39,7 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
     private ShareActionProvider mShareActionProvider;
     private MenuItem mShareMenu;
     private boolean fromNotification = false;
+    private MenuItem menuNowPlaying;
 
     private void changeTrack(int currentTrack) {
         if (twoPane) {
@@ -50,14 +51,16 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
 
     @Override
     void afterServiceConnected() {
+        if (musicPlayerService == null) return;
 
         Log.d(LOG_TAG, "Service connected");
+
         musicPlayerService.setTwoPane(twoPane);
 
         Intent intent = getIntent();
         String action = intent != null ? intent.getAction() : null;
 
-        if (ACTION_FROM_NOTIFICATION.equals(action) && musicPlayerService != null) {
+        if (ACTION_FROM_NOTIFICATION.equals(action)) {
             fromNotification = true;
             TrackModel track = musicPlayerService.getCurrentTrackModel();
             if (track != null && twoPane) {
@@ -77,7 +80,9 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
     }
 
     void getBroadcastStatus(Intent intent) {
-        if (intent == null || musicPlayerService == null) return;
+        if (intent == null || !musicBound || musicPlayerService == null) return;
+        Utility.setNowPlayingMenuVisibility(musicPlayerService, menuNowPlaying);
+
         MusicPlayerService.Status status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
         int currentTrack = musicPlayerService.getCurrentTrack();
         Log.d(LOG_TAG, "Broadcast received: " + status.name());
@@ -132,6 +137,11 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         mShareMenu = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(mShareMenu);
 
+        menuNowPlaying = menu.findItem(R.id.action_now_playing);
+
+        if (musicPlayerService != null) {
+            Utility.setNowPlayingMenuVisibility(musicPlayerService, menuNowPlaying);
+        }
         return true;
     }
 
@@ -146,6 +156,17 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        } else if (id == R.id.action_now_playing) {
+
+            if (musicPlayerService != null) {
+                if (twoPane) {
+                    onTrackSelected(musicPlayerService.getCurrentTrack(), musicPlayerService.getArtistId(),
+                            musicPlayerService.getArtistName(), musicPlayerService.getTrackModels());
+                } else {
+                    Intent intent = Utility.getNowPlayingIntent(this, twoPane, musicPlayerService);
+                    startActivity(intent);
+                }
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -217,6 +238,8 @@ public class MainActivity extends MusicServiceActivity implements ArtistListFrag
         super.onResume();
         if (musicBound && musicPlayerService != null) {
             changeTrack(musicPlayerService.getCurrentTrack());
+            setShareOptions();
+            Utility.setNowPlayingMenuVisibility(musicPlayerService, menuNowPlaying);
         }
     }
 

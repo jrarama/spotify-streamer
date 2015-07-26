@@ -1,10 +1,8 @@
 package com.jrarama.spotifystreamer.app.fragment;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -38,6 +36,7 @@ public class ArtistListFragment extends MusicServiceFragment {
     private String mSearchArtist = null;
     private EditText searchBox;
     private boolean fromNotification = false;
+    private boolean noTextChanged;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -124,7 +123,13 @@ public class ArtistListFragment extends MusicServiceFragment {
 
             @Override
             public void afterTextChanged(final Editable s) {
-                if (fromNotification && mArtistModels != null) return;
+                if (fromNotification) {
+                    if (noTextChanged) {
+                        noTextChanged = false;
+                        return;
+                    }
+                }
+
                 mSearchArtist = s.toString();
                 timer.cancel();
 
@@ -171,6 +176,7 @@ public class ArtistListFragment extends MusicServiceFragment {
         if (MainActivity.ACTION_FROM_NOTIFICATION.equals(action) && musicPlayerService != null) {
             mSearchArtist = musicPlayerService.getQueryString();
             fromNotification = true;
+            noTextChanged = true;
 
             if (searchBox != null) {
                 searchBox.setText(mSearchArtist);
@@ -179,6 +185,7 @@ public class ArtistListFragment extends MusicServiceFragment {
             populateArtists();
         } else {
             fromNotification = false;
+            noTextChanged = false;
         }
     }
 

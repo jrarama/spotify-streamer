@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.NotificationCompat;
+import android.view.MenuItem;
 
 import com.jrarama.spotifystreamer.app.activity.MainActivity;
 import com.jrarama.spotifystreamer.app.activity.TrackPlayerActivity;
@@ -90,37 +91,31 @@ public class Utility {
         builder.setSmallIcon(!playing ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
         builder.setVisibility(Notification.VISIBILITY_PUBLIC);
         builder.setOngoing(true);
+        builder.setPriority(2);
 
         Intent prevIntent = new Intent(context, MusicPlayerService.class).setAction(MusicPlayerService.ACTION_PREVIOUS);
         Intent nextIntent = new Intent(context, MusicPlayerService.class).setAction(MusicPlayerService.ACTION_NEXT);
         Intent playIntent = new Intent(context, MusicPlayerService.class)
             .setAction(playing ? MusicPlayerService.ACTION_PAUSE : MusicPlayerService.ACTION_PLAY);
 
-        builder.addAction(android.R.drawable.ic_media_previous, "Previous", PendingIntent.getService(context, 0, prevIntent, 0));
-        if (playing) {
-            builder.addAction(android.R.drawable.ic_media_pause, "Pause", PendingIntent.getService(context, 0, playIntent, 0));
-        } else {
-            builder.addAction(android.R.drawable.ic_media_play, "Play", PendingIntent.getService(context, 0, playIntent, 0));
+        if (isPreferredNotifControls(context)) {
+            builder.addAction(android.R.drawable.ic_media_previous, "Previous", PendingIntent.getService(context, 0, prevIntent, 0));
+            if (playing) {
+                builder.addAction(android.R.drawable.ic_media_pause, "Pause", PendingIntent.getService(context, 0, playIntent, 0));
+            } else {
+                builder.addAction(android.R.drawable.ic_media_play, "Play", PendingIntent.getService(context, 0, playIntent, 0));
+            }
+            builder.addAction(android.R.drawable.ic_media_next, "Next", PendingIntent.getService(context, 0, nextIntent, 0));
+
+            NotificationCompat.MediaStyle mediaStyle = new NotificationCompat.MediaStyle();
+            mediaStyle.setShowActionsInCompactView(1);
+
+            builder.setStyle(mediaStyle);
         }
-        builder.addAction(android.R.drawable.ic_media_next, "Next", PendingIntent.getService(context, 0, nextIntent, 0));
-
-        NotificationCompat.MediaStyle mediaStyle = new NotificationCompat.MediaStyle();
-        mediaStyle.setShowActionsInCompactView(1);
-
-        builder.setStyle(mediaStyle);
 
         boolean twoPane = service.isTwoPane();
+        Intent resultIntent = getNowPlayingIntent(context, twoPane, service);
         Class<?> clazz = twoPane ? MainActivity.class : TrackPlayerActivity.class;
-
-        Intent resultIntent = new Intent(context, clazz)
-                .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .setAction(MainActivity.ACTION_FROM_NOTIFICATION);
-
-        if (!twoPane) {
-            resultIntent.putExtra(TrackPlayerFragment.POSITION, service.getCurrentTrack());
-            resultIntent.putExtra(TrackPlayerFragment.ARTIST_NAME, service.getArtistName());
-            resultIntent.putExtra(TrackPlayerFragment.TRACKS, service.getTrackModels());
-        }
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(clazz);
@@ -158,8 +153,40 @@ public class Utility {
         manager.notify(NOTIFICATION_TAG, 0, builder.build());
     }
 
+    public static Intent getNowPlayingIntent(Context context, boolean twoPane, MusicPlayerService service) {
+        Class<?> clazz = twoPane ? MainActivity.class : TrackPlayerActivity.class;
+
+        Intent intent = new Intent(context, clazz)
+                .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .setAction(MainActivity.ACTION_FROM_NOTIFICATION);
+
+        if (!twoPane) {
+            intent.putExtra(TrackPlayerFragment.POSITION, service.getCurrentTrack());
+            intent.putExtra(TrackPlayerFragment.ARTIST_NAME, service.getArtistName());
+            intent.putExtra(TrackPlayerFragment.TRACKS, service.getTrackModels());
+        }
+
+        return intent;
+    }
+
     public static void cancelNotification(Context context) {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_TAG, 0);
+    }
+
+
+    public static void setNowPlayingMenuVisibility(MusicPlayerService service, MenuItem menuNowPlaying) {
+        if (service == null || menuNowPlaying == null) return;
+
+        switch (service.getStatus()) {
+            case PLAYING:
+            case PAUSED:
+            case PREPARED:
+            case INITIALIZED:
+                menuNowPlaying.setVisible(true);
+                break;
+            default:
+                menuNowPlaying.setVisible(false);
+        }
     }
 }

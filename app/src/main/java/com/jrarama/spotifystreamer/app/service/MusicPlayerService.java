@@ -3,25 +3,18 @@ package com.jrarama.spotifystreamer.app.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 
 import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.model.ArtistModel;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -315,6 +308,12 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Utility.cancelNotification(getApplicationContext());
+        super.onTaskRemoved(rootIntent);
+    }
+
+    @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         status = Status.IDLE;
         return false;
@@ -337,4 +336,5 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
             return MusicPlayerService.this;
         }
     }
+
 }

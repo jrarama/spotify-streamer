@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
@@ -19,6 +20,7 @@ import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
  */
 public abstract class MusicServiceActivity extends AppCompatActivity {
 
+    private static final String LOG_TAG = MusicServiceActivity.class.getSimpleName();
     protected MusicPlayerService musicPlayerService;
 
     private BroadcastReceiver receiver;
@@ -84,8 +86,12 @@ public abstract class MusicServiceActivity extends AppCompatActivity {
     public void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
 
-        if (trackServiceConnection != null) {
-            unbindService(trackServiceConnection);
+        try {
+            if (trackServiceConnection != null) {
+                unbindService(trackServiceConnection);
+            }
+        } catch (Exception ex) {
+            Log.e(LOG_TAG, "Unable to unbind service");
         }
         super.onStop();
     }

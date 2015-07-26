@@ -106,7 +106,7 @@ public class TrackPlayerFragment extends DialogFragment {
     }
 
     private void getBroadcastStatus(Intent intent) {
-        if (intent == null && musicBound) return;
+        if (intent == null || !musicBound || musicPlayerService == null) return;
         status = (MusicPlayerService.Status) intent.getSerializableExtra(MusicPlayerService.STATUS);
         currentTrack = musicPlayerService.getCurrentTrack();
         Log.d(LOG_TAG, "Broadcast received: " + status.name());
@@ -137,6 +137,7 @@ public class TrackPlayerFragment extends DialogFragment {
         }
         setButtonProperties();
         setSeekbarEnabled();
+
     }
 
     private void setSeekbarEnabled() {

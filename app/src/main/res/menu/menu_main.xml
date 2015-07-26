@@ -3,11 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
 
     <item
+        android:id="@+id/action_now_playing"
+        android:title="@string/action_now_playing"
+        android:icon="@android:drawable/ic_media_play"
+        android:orderInCategory="10"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+
+    <item
         android:id="@+id/action_share"
         android:title="@string/action_share"
-        android:orderInCategory="10"
+        android:orderInCategory="20"
         android:visible="false"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider"
         />
 

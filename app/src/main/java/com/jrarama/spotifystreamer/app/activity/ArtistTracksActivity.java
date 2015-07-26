@@ -7,12 +7,15 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.jrarama.spotifystreamer.app.R;
+import com.jrarama.spotifystreamer.app.Utility;
 import com.jrarama.spotifystreamer.app.fragment.ArtistTracksFragment;
 import com.jrarama.spotifystreamer.app.fragment.TrackPlayerFragment;
 import com.jrarama.spotifystreamer.app.model.TrackModel;
+import com.jrarama.spotifystreamer.app.service.MusicPlayerService;
 
 import java.util.ArrayList;
 
@@ -22,8 +25,8 @@ public class ArtistTracksActivity extends MusicServiceActivity implements Artist
 
     private String artistName;
 
-
     private boolean fromNotification;
+    private MenuItem menuNowPlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +46,14 @@ public class ArtistTracksActivity extends MusicServiceActivity implements Artist
         if (savedInstanceState == null) {
             showTracks(id, artistName, false);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_now_playing, menu);
+        menuNowPlaying = menu.findItem(R.id.action_now_playing);
+        Utility.setNowPlayingMenuVisibility(musicPlayerService, menuNowPlaying);
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void showTracks(String id, String artistName, boolean replace) {
@@ -73,7 +84,6 @@ public class ArtistTracksActivity extends MusicServiceActivity implements Artist
     }
 
     @Override
-
     public void onBackPressed() {
         Log.d(LOG_TAG, "Back button is pressed");
         if (upFromNotification()) {
@@ -97,18 +107,30 @@ public class ArtistTracksActivity extends MusicServiceActivity implements Artist
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        int up = android.R.id.home;
-        if (id == up) {
-            Log.d(LOG_TAG, "Home button is pressed");
-            if (upFromNotification()) {
-                return true;
-            }
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Log.d(LOG_TAG, "Home button is pressed");
+                if (upFromNotification()) {
+                    return true;
+                }
+                break;
+            case R.id.action_now_playing:
+                {
+                    Log.d(LOG_TAG, "Now playing is pressed");
+                    Intent intent = Utility.getNowPlayingIntent(this, false, musicPlayerService);
+                    startActivity(intent);
+                }
+                break;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        Utility.setNowPlayingMenuVisibility(musicPlayerService, menuNowPlaying);
+        super.onResume();
+    }
 
     @Override
     void afterServiceConnected() {
@@ -122,6 +144,7 @@ public class ArtistTracksActivity extends MusicServiceActivity implements Artist
 
     @Override
     void getBroadcastStatus(Intent intent) {
-
+        if (intent == null || !musicBound || musicPlayerService == null) return;
+        Utility.setNowPlayingMenuVisibility(musicPlayerService, menuNowPlaying);
     }
 }
