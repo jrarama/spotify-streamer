@@ -50,8 +50,6 @@ public class ArtistListFragment extends MusicServiceFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setRetainInstance(true);
-
         if (savedInstanceState != null) {
             mArtistModels = savedInstanceState.getParcelableArrayList(ARTISTS_KEY);
             mSearchArtist = savedInstanceState.getString(SEARCH_KEY);
@@ -130,22 +128,25 @@ public class ArtistListFragment extends MusicServiceFragment {
                     }
                 }
 
-                mSearchArtist = s.toString();
                 timer.cancel();
 
-                if (mSearchArtist.length() == 0) {
+                if (s.length() == 0) {
                     mArtistModels = null;
+                    mSearchArtist = s.toString();
                     populateArtists();
                     return;
                 }
 
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        new ArtistFetcher().execute(mSearchArtist);
-                    }
-                }, TEXT_CHANGE_DELAY);
+                if (!s.toString().equals(mSearchArtist)) {
+                    mSearchArtist = s.toString();
+                    timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            new ArtistFetcher().execute(mSearchArtist);
+                        }
+                    }, TEXT_CHANGE_DELAY);
+                }
             }
         });
     }
